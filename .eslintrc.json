@@ -1,0 +1,44 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 5,
+    "sourceType": "script"
+  },
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "Promise": true,
+    "WebAudio": true,
+
+    "Graphics": true,
+    "AudioManager": true,
+    "_WebAudio__setupEventHandlers": true,
+    "Game_Interpreter": true,
+    "$gameVariables": true
+  },
+  "plugins": [
+    "compat"
+  ],
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "indent": [
+      2,
+      4
+    ],
+    "quotes": [
+      2,
+      "double"
+    ],
+    "linebreak-style": [
+      2,
+      "unix"
+    ],
+    "semi": [
+      2,
+      "always"
+    ],
+    "compat/compat": 2
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "mv-plugins",
+  "version": "1.0.0",
+  "description": "RPGアツマール製のRPGツクールMVプラグイン置き場です。",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "editorconfig-tools": "^0.1.1",
+    "eslint": "^4.19.1",
+    "eslint-plugin-compat": "^2.2.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.0.4"
+  },
+  "scripts": {
+    "lint": "eslint --fix plugins",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{json,md}": [
+      "editorconfig-tools fix",
+      "git add"
+    ],
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 ChromeAndroid versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "last 2 iOS versions",
+    "> 5%"
+  ]
+}
