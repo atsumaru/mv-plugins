@@ -58,7 +58,7 @@
  * 
  * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
  *      SetRecordToScoreboard
- *          無視される（変数<errorVariableId>には何もセットされない）
+ *          無視される（変数<errorVariableId>が指定されているなら即座に0がセットされる）
  *      DisplayScoreboard
  *          無視される
  *      FetchRecordsFromScoreboard
