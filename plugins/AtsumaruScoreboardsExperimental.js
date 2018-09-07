@@ -139,6 +139,8 @@
                                 break;
                         }
                     });
+            } else if (args.length > 2) {
+                $gameVariables.setValue(errorVariableId, 0);
             }
         } else if (command === "DisplayScoreboard") {
             if (args.length < 1) {
