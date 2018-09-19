@@ -100,13 +100,13 @@
  * 
  * @help
  *
- * ◆プラグインコマンド：GetGeolocation　で位置情報を取得します。
+ * ◆プラグインコマンド：GetGeolocation で位置情報を取得します。
  * 取得した位置情報は「パラメータ」で指定した番号の変数に代入されます。
  * 位置情報の取得に失敗した場合は、指定したすべての変数に０が代入されます。
  */
 (function() {
-    'use strict';
-    var pluginName = 'GetGeolocation';
+    "use strict";
+    var pluginName = "GetGeolocation";
     var parameters = PluginManager.parameters(pluginName);
     var wait = false;
 

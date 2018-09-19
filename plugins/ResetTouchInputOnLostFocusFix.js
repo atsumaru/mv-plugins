@@ -16,10 +16,10 @@
  * @author RPGアツマール開発チーム
  */
 (function() {
-    'use strict';
+    "use strict";
     var _TouchInput__setupEventHandlers = TouchInput._setupEventHandlers;
     TouchInput._setupEventHandlers = function() {
         _TouchInput__setupEventHandlers.apply(this, arguments);
-        window.addEventListener('blur', this.clear.bind(this));
+        window.addEventListener("blur", this.clear.bind(this));
     };
 })();
