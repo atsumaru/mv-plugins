@@ -37,7 +37,7 @@
  *      # 準備したスコアボードから<target>情報を読み込んで変数<variableId>にセットする。
  *      # 準備ができてない場合は0がセットされる。
  *      # 例: GetDataFromScoreboardRecords ranking[0].score 7
- *      boardId 1〜（ボードの数）までの整数　ボードの数の初期値は10
+ *      boardId 1〜（ボードの数）までの整数 ボードの数の初期値は10
  *      target一覧
  *          myRecord # 今回の自己レコードがある場合は1、ない場合は0がセットされる
  *          myRecord.rank # 今回の自己レコードの順位、非ログイン時は0がセットされる
@@ -67,7 +67,7 @@
  *          どの<target>を指定しても、結果はすべて0がセットされる
  */
 (function() {
-    'use strict';
+    "use strict";
     function isInt32(number) {
         return (number | 0) === number;
     }
@@ -125,18 +125,18 @@
                         }
                     }, function(error) {
                         switch (error.code) {
-                            case "BAD_REQUEST":
-                                SceneManager.catchException(error);
-                                break;
-                            case "UNAUTHORIZED":
-                            case "INTERNAL_SERVER_ERROR":
-                            default:
-                                that._waitForScoreboardPlugin = false;
-                                if (args.length > 2) {
-                                    $gameVariables.setValue(errorVariableId, error.message);
-                                }
-                                console.error(error);
-                                break;
+                        case "BAD_REQUEST":
+                            SceneManager.catchException(error);
+                            break;
+                        case "UNAUTHORIZED":
+                        case "INTERNAL_SERVER_ERROR":
+                        default:
+                            that._waitForScoreboardPlugin = false;
+                            if (args.length > 2) {
+                                $gameVariables.setValue(errorVariableId, error.message);
+                            }
+                            console.error(error);
+                            break;
                         }
                     });
             }
@@ -166,16 +166,16 @@
                     that._waitForScoreboardPlugin = false;
                 }, function(error) {
                     switch (error.code) {
-                        case "BAD_REQUEST":
-                            SceneManager.catchException(error);
-                            break;
-                        case "UNAUTHORIZED":
-                        case "INTERNAL_SERVER_ERROR":
-                        default:
-                            that._waitForScoreboardPlugin = false;
-                            recordsFromScoreboard = { errorMessage: error.message };
-                            console.error(error);
-                            break;
+                    case "BAD_REQUEST":
+                        SceneManager.catchException(error);
+                        break;
+                    case "UNAUTHORIZED":
+                    case "INTERNAL_SERVER_ERROR":
+                    default:
+                        that._waitForScoreboardPlugin = false;
+                        recordsFromScoreboard = { errorMessage: error.message };
+                        console.error(error);
+                        break;
                     }
                 });
             }

@@ -14,7 +14,11 @@
     "AudioManager": true,
     "_WebAudio__setupEventHandlers": true,
     "Game_Interpreter": true,
-    "$gameVariables": true
+    "$gameVariables": true,
+    "PluginManager": true,
+    "TouchInput": true,
+    "SceneManager": true,
+    "$dataSystem": true
   },
   "plugins": [
     "compat"
@@ -39,6 +43,7 @@
       2,
       "always"
     ],
-    "compat/compat": 2
+    "compat/compat": 2,
+    "no-console": ["error", { "allow": ["error"] }]
   }
 }
