@@ -18,12 +18,13 @@
  */
 
 (function(){
+    "use strict";
     // contains dwango_ForceWebAudio effects
     AudioManager.shouldUseHtml5Audio = function() {
         return false;
     };
     // for Android Chrome 55+
-    _WebAudio__setupEventHandlers = WebAudio._setupEventHandlers;
+    var _WebAudio__setupEventHandlers = WebAudio._setupEventHandlers;
     WebAudio._setupEventHandlers = function() {
         // BUG: Android Chrome 55+ treats touchstart as non-user gesture
         document.addEventListener("touchend", function() {
