@@ -14,12 +14,13 @@
  *
  * プラグインコマンド:
  *   CopyQuery <id1> <id2>...         # param1をid1にコピー、param2をid2にコピー
+ *   クエリ取得 <id1> <id2>...         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
  */
 (function() {
     var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
         _Game_Interpreter_pluginCommand.apply(this, arguments);
-        if (command === "CopyQuery") {
+        if (command === "CopyQuery" || command === "クエリ取得") {
             for (var i = 0; i < args.length; ++i) {
                 var key = "param" + String(i + 1);
                 var value = "";
