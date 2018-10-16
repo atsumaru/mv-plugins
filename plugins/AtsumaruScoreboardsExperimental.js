@@ -16,14 +16,14 @@
  *   SetRecordToScoreboard <boardId> <variableId>
  *   スコア送信 <boardId> <variableId>
  *      # 変数<variableId>をスコアから読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は-2147483648～2147483647までの整数のみ。
+ *      # 送信できるスコアの値は整数のみ。（負の整数可）
  *      # 例: SetRecordToScoreboard 1 6
  *      #   : スコア送信 1 6
  *
  *   SetRecordToScoreboard <boardId> <variableId> <errorVariableId>
  *   スコア送信 <boardId> <variableId> <errorVariableId>
  *      # 変数<variableId>をスコアから読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は-2147483648～2147483647までの整数のみ。
+ *      # 送信できるスコアの値は整数のみ。（負の整数可）
  *      # また、変数<errorVariableId>に
  *          スコアの送信に失敗した場合はエラーメッセージ、成功した場合は0がセットされる
  *      # 例: SetRecordToScoreboard 1 6 7
@@ -79,16 +79,16 @@
  */
 (function() {
     "use strict";
-    function isInt32(number) {
-        return (number | 0) === number;
+    function isInteger(value) {
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
 
-    function isPositiveInt32(number) {
-        return isInt32(number) && number > 0;
+    function isNatural(value) {
+        return isInteger(value) && value > 0;
     }
 
     function isValidVariableId(variableId) {
-        return isPositiveInt32(variableId) && variableId < $dataSystem.variables.length;
+        return isNatural(variableId) && variableId < $dataSystem.variables.length;
     }
 
     var scoreboardsDefined = window.RPGAtsumaru && window.RPGAtsumaru.experimental.scoreboards;
@@ -110,8 +110,8 @@
             boardId = Number(args[0]);
             variableId = Number(args[1]);
             var errorVariableId = Number(args[2]);
-            if (!isPositiveInt32(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには1～2147483647までの整数を指定してください。boardId: " + args[0]);
+            if (!isNatural(boardId)) {
+                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
             }
             if (!isValidVariableId(variableId)) {
                 throw new Error("「" + command + "」コマンドでは、variableIdには1～" + variableMax + "までの整数を指定してください。variableId: " + args[1]);
@@ -123,8 +123,8 @@
             if (typeof score !== "number") {
                 score = Number(score);
             }
-            if (!isInt32(score)) {
-                throw new Error("「" + command + "」コマンドでは、scoreには-2147483648～2147483647までの整数を指定してください。score: " + $gameVariables.value(variableId));
+            if (!isInteger(score)) {
+                throw new Error("「" + command + "」コマンドでは、scoreには整数を指定してください。score: " + $gameVariables.value(variableId));
             }
             if (setRecordDefined) {
                 this._waitForScoreboardPlugin = true;
@@ -140,6 +140,7 @@
                             SceneManager.catchException(error);
                             break;
                         case "INTERNAL_SERVER_ERROR":
+                        case "API_CALL_LIMIT_EXCEEDED":
                         default:
                             that._waitForScoreboardPlugin = false;
                             var message = error.message;
@@ -159,8 +160,8 @@
                 throw new Error("「" + command + "」コマンドでは、boardIdを指定してください");
             }
             boardId = Number(args[0]);
-            if (!isPositiveInt32(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには1～2147483647までの整数を指定してください。boardId: " + args[0]);
+            if (!isNatural(boardId)) {
+                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
             }
             if (displayDefined) {
                 window.RPGAtsumaru.experimental.scoreboards.display(boardId);
@@ -170,8 +171,8 @@
                 throw new Error("「" + command + "」コマンドでは、boardIdを指定してください");
             }
             boardId = Number(args[0]);
-            if (!isPositiveInt32(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには1～2147483647までの整数を指定してください。boardId: " + args[0]);
+            if (!isNatural(boardId)) {
+                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
             }
             if (getRecordsDefined) {
                 this._waitForScoreboardPlugin = true;
@@ -184,6 +185,7 @@
                         SceneManager.catchException(error);
                         break;
                     case "INTERNAL_SERVER_ERROR":
+                    case "API_CALL_LIMIT_EXCEEDED":
                     default:
                         that._waitForScoreboardPlugin = false;
                         var message = error.message;
