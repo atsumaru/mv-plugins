@@ -22,10 +22,12 @@
         _Game_Interpreter_pluginCommand.apply(this, arguments);
         if ((command === "DisplayCreatorInformationModal" || command === "作者情報ダイアログ表示") && window.RPGAtsumaru && window.RPGAtsumaru.experimental.popups && window.RPGAtsumaru.experimental.popups.displayCreatorInformationModal) {
             var niconicoUserId = Number(args[0]);
-            if (isFinite(niconicoUserId) && Math.floor(niconicoUserId) === niconicoUserId && niconicoUserId > 0) {
+            if (args.length === 0) {
+                window.RPGAtsumaru.experimental.popups.displayCreatorInformationModal();
+            } else if (isFinite(niconicoUserId) && Math.floor(niconicoUserId) === niconicoUserId && niconicoUserId > 0) {
                 window.RPGAtsumaru.experimental.popups.displayCreatorInformationModal(niconicoUserId);
             } else {
-                throw new Error("「" + command + "」コマンドでは、niconicoUserIdには自然数を指定してください。niconicoUserId: " + args[0]);
+                throw new Error("「" + command + "」コマンドでは、niconicoUserIdを指定する場合は自然数にしてください。niconicoUserId: " + args[0]);
             }
         }
     };
