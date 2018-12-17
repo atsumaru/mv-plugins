@@ -16,14 +16,14 @@
  *   SetRecordToScoreboard <boardId> <variableId>
  *   スコア送信 <boardId> <variableId>
  *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は-2147483648～2147483647までの整数のみ。
+ *      # 送信できるスコアの値は整数のみ。（負の整数可）
  *      # 例: SetRecordToScoreboard 1 6
  *      #   : スコア送信 1 6
  *
  *   SetRecordToScoreboard <boardId> <variableId> <errorVariableId>
  *   スコア送信 <boardId> <variableId> <errorVariableId>
  *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は-2147483648～2147483647までの整数のみ。
+ *      # 送信できるスコアの値は整数のみ。（負の整数可）
  *      # また、変数<errorVariableId>に
  *          スコアの送信に失敗した場合はエラーメッセージ、成功した場合は0がセットされる
  *      # 例: SetRecordToScoreboard 1 6 7
