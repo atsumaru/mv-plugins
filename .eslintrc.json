@@ -1,10 +1,12 @@
 {
+  "parser": "typescript-eslint-parser",
   "parserOptions": {
     "ecmaVersion": 5,
-    "sourceType": "script"
+    "sourceType": "module"
   },
   "env": {
-    "browser": true
+    "browser": true,
+    "commonjs": true
   },
   "globals": {
     "Promise": true,
@@ -230,6 +232,7 @@
       "always"
     ],
     "compat/compat": 2,
-    "no-console": ["error", { "allow": ["error"] }]
+    "no-console": ["error", { "allow": ["error"] }],
+    "no-unused-vars": 0
   }
 }

@@ -6,20 +6,22 @@
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
 
-/*:
- * @plugindesc Reset touch input on lost focus.
- * @author RPG Atsumaru development team
- */
+(function () {
+    'use strict';
 
-/*:ja
- * @plugindesc ゲームがフォーカスを失った時、タッチ入力をリセットするように修正します。
- * @author RPGアツマール開発チーム
- */
-(function() {
-    "use strict";
-    var _TouchInput__setupEventHandlers = TouchInput._setupEventHandlers;
-    TouchInput._setupEventHandlers = function() {
-        _TouchInput__setupEventHandlers.apply(this, arguments);
-        window.addEventListener("blur", this.clear.bind(this));
-    };
-})();
+    // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
+    }
+
+    /*:
+     * @plugindesc ゲームがフォーカスを失った時、タッチ入力をリセットするように修正します。
+     * @author RPGアツマール開発チーム
+     */
+    hookStatic(TouchInput, "_setupEventHandlers", function (origin) { return function () {
+        var _this = this;
+        origin.apply(this, arguments);
+        window.addEventListener("blur", function () { return _this.clear(); });
+    }; });
+
+}());
