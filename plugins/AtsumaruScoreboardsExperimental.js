@@ -6,221 +6,299 @@
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
 
-/*:
- * @plugindesc RPGアツマールのスコアボードのプラグインです
- * @author RPGアツマール開発チーム
- *
- * @help
- *
- * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
- *   SetRecordToScoreboard <boardId> <variableId>
- *   スコア送信 <boardId> <variableId>
- *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は整数のみ。（負の整数可）
- *      # 例: SetRecordToScoreboard 1 6
- *      #   : スコア送信 1 6
- *
- *   SetRecordToScoreboard <boardId> <variableId> <errorVariableId>
- *   スコア送信 <boardId> <variableId> <errorVariableId>
- *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
- *      # 送信できるスコアの値は整数のみ。（負の整数可）
- *      # また、変数<errorVariableId>に
- *          スコアの送信に失敗した場合はエラーメッセージ、成功した場合は0がセットされる
- *      # 例: SetRecordToScoreboard 1 6 7
- *      #   : スコア送信 1 6 7
- *
- *   DisplayScoreboard <boardId>
- *   スコア表示 <boardId>
- *      # スコアボード<boardId>を開く
- *      # 例: DisplayScoreboard 1
- *      #   : スコア表示 1
- *
- *   FetchRecordsFromScoreboard <boardId>
- *   スコア受信 <boardId>
- *      # スコアボード<boardId>をサーバから読み込んで準備する
- *      # 例: FetchRecordsFromScoreboard 1
- *      #   : スコア受信 1
- *
- *   GetDataFromScoreboardRecords <target> <variableId>
- *   スコア取得 <target> <variableId>
- *      # 準備したスコアボードから<target>情報を読み込んで変数<variableId>にセットする。
- *      # 準備ができてない場合は0がセットされる。
- *      # 例: GetDataFromScoreboardRecords ranking[0].score 7
- *      #   : スコア取得 ranking[0].score 7
- *
- *      target一覧
- *          myRecord # 今回の自己レコードがある場合は1、ない場合は0がセットされる
- *          myRecord.rank # 今回の自己レコードの順位、ない場合は0がセットされる
- *          myRecord.score # 今回の自己レコードのスコア、ない場合は0がセットされる
- *          myRecord.isNewRecord # 今回の自己レコードが自己新記録なら1、そうでない場合は0がセットされる
- *          ranking.length # ランキングデータの長さ
- *          ranking[n].rank # n+1番目の人の順位がセットされる
- *          ranking[n].userName # n+1番目の人のユーザ名がセットされる
- *          ranking[n].score # n+1番目の人のスコアがセットされる
- *          myBestRecord # 自己最高記録がある場合は1、ない場合（または非ログイン）は0がセットされる
- *          myBestRecord.rank # 自己最高記録の順位、ない場合（または非ログイン）は0がセットされる
- *          myBestRecord.score # 自己最高記録のスコア、ない場合（または非ログイン）は0がセットされる
- *          errorMessage # スコアの読み込みに失敗した場合はエラーメッセージ、成功した場合は0がセットされる
- *
- * スコアボードの仕様:
- *      <boardId>は、1〜（ボードの数）までの整数 ボードの数の初期値は10
- *      登録したスコアは、そのプレイヤーがプレミアム会員の場合は永続保存される
- *      プレイヤーが一般会員だとボードごとに最新100ユーザしか保存されない
- *
- * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
- *      SetRecordToScoreboard（スコア送信）
- *          無視される（変数<errorVariableId>には何もセットされない）
- *      DisplayScoreboard（スコア表示）
- *          無視される
- *      FetchRecordsFromScoreboard（スコア受信）
- *          無視される
- *      GetDataFromScoreboardRecords（スコア取得）
- *          どの<target>を指定しても、結果はすべて0がセットされる
- */
-(function() {
-    "use strict";
+(function () {
+    'use strict';
+
+    function isNumber(value) {
+        return value !== "" && !isNaN(value);
+    }
     function isInteger(value) {
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
-
     function isNatural(value) {
         return isInteger(value) && value > 0;
     }
-
     function isValidVariableId(variableId) {
         return isNatural(variableId) && variableId < $dataSystem.variables.length;
     }
 
-    var scoreboardsDefined = window.RPGAtsumaru && window.RPGAtsumaru.experimental.scoreboards;
-    var setRecordDefined = scoreboardsDefined && window.RPGAtsumaru.experimental.scoreboards.setRecord;
-    var displayDefined = scoreboardsDefined && window.RPGAtsumaru.experimental.scoreboards.display;
-    var getRecordsDefined = scoreboardsDefined && window.RPGAtsumaru.experimental.scoreboards.getRecords;
-    var recordsFromScoreboard = null;
-    var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
-    Game_Interpreter.prototype.pluginCommand = function(command, args) {
-        _Game_Interpreter_pluginCommand.apply(this, arguments);
-        var boardId;
-        var variableId;
-        var variableMax = $dataSystem.variables.length - 1;
-        var that = this;
-        if (command === "SetRecordToScoreboard" || command === "スコア送信") {
-            if (args.length < 2) {
-                throw new Error("「" + command + "」コマンドでは、boardIdとvariableIdを両方指定してください");
+    // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
+    function hook(baseClass, target, f) {
+        baseClass.prototype[target] = f(baseClass.prototype[target]);
+    }
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
+    }
+    // プラグインコマンドを追加する
+    function addPluginCommand(commands) {
+        hook(Game_Interpreter, "pluginCommand", function (origin) { return function (command, args) {
+            origin.apply(this, arguments);
+            if (commands[command]) {
+                commands[command].apply(this, [command].concat(args));
             }
-            boardId = Number(args[0]);
-            variableId = Number(args[1]);
-            var errorVariableId = Number(args[2]);
-            if (!isNatural(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
-            }
-            if (!isValidVariableId(variableId)) {
-                throw new Error("「" + command + "」コマンドでは、variableIdには1～" + variableMax + "までの整数を指定してください。variableId: " + args[1]);
-            }
-            if (args.length > 2 && !isValidVariableId(errorVariableId)) {
-                throw new Error("「" + command + "」コマンドでは、errorVariableIdには1～" + variableMax + "までの整数を指定してください。errorVariableId: " + args[2]);
-            }
-            var score = $gameVariables.value(variableId);
-            if (typeof score !== "number") {
-                score = Number(score);
-            }
-            if (!isInteger(score)) {
-                throw new Error("「" + command + "」コマンドでは、scoreには整数を指定してください。score: " + $gameVariables.value(variableId));
-            }
-            if (setRecordDefined) {
-                this._waitForScoreboardPlugin = true;
-                window.RPGAtsumaru.experimental.scoreboards.setRecord(boardId, score)
-                    .then(function() {
-                        that._waitForScoreboardPlugin = false;
-                        if (args.length > 2) {
-                            $gameVariables.setValue(errorVariableId, 0);
-                        }
-                    }, function(error) {
-                        switch (error.code) {
-                        case "BAD_REQUEST":
-                            SceneManager.catchException(error);
-                            break;
-                        case "INTERNAL_SERVER_ERROR":
-                        case "API_CALL_LIMIT_EXCEEDED":
-                        default:
-                            that._waitForScoreboardPlugin = false;
-                            var message = error.message;
-                            if (message.length > 27) {
-                                message = message.slice(0, 27) + "\n" + message.slice(27);
-                            }
-                            if (args.length > 2) {
-                                $gameVariables.setValue(errorVariableId, message);
-                            }
-                            console.error(error);
-                            break;
-                        }
-                    });
-            }
-        } else if (command === "DisplayScoreboard" || command === "スコア表示") {
-            if (args.length < 1) {
-                throw new Error("「" + command + "」コマンドでは、boardIdを指定してください");
-            }
-            boardId = Number(args[0]);
-            if (!isNatural(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
-            }
-            if (displayDefined) {
-                window.RPGAtsumaru.experimental.scoreboards.display(boardId);
-            }
-        } else if (command === "FetchRecordsFromScoreboard" || command === "スコア受信") {
-            if (args.length < 1) {
-                throw new Error("「" + command + "」コマンドでは、boardIdを指定してください");
-            }
-            boardId = Number(args[0]);
-            if (!isNatural(boardId)) {
-                throw new Error("「" + command + "」コマンドでは、boardIdには自然数を指定してください。boardId: " + args[0]);
-            }
-            if (getRecordsDefined) {
-                this._waitForScoreboardPlugin = true;
-                window.RPGAtsumaru.experimental.scoreboards.getRecords(boardId).then(function(result) {
-                    recordsFromScoreboard = result;
-                    that._waitForScoreboardPlugin = false;
-                }, function(error) {
-                    switch (error.code) {
+        }; });
+    }
+    // Promiseが終了するまでイベントコマンドをウェイトするための処理を追加する
+    function prepareBindPromise() {
+        if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
+            return;
+        }
+        // ソフトリセットのタイミングでローディングカウンターを初期化
+        hook(Game_Temp, "initialize", function (origin) { return function () {
+            origin.apply(this, arguments);
+            this._loadingCounterForRPGAtsumaruPlugin = 0;
+        }; });
+        // 通信中のセーブは許可しない。ハードリセットしてロードした後、
+        // その通信がどんな結果だったのか、成功したか失敗したかなどを復元する方法はもはやないため
+        hookStatic(DataManager, "saveGame", function (origin) { return function () {
+            return $gameTemp._loadingCounterForRPGAtsumaruPlugin === 0 && origin.apply(this, arguments);
+        }; });
+        // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
+        Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin = function (promise, resolve, reject) {
+            var _this = this;
+            var $gameTempLocal = $gameTemp;
+            $gameTempLocal._loadingCounterForRPGAtsumaruPlugin++;
+            this._index--;
+            this._promiseResolverForRPGAtsumaruPlugin = function () { return false; };
+            promise.then(function (value) { return _this._promiseResolverForRPGAtsumaruPlugin = function () {
+                $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
+                _this._index++;
+                delete _this._promiseResolverForRPGAtsumaruPlugin;
+                if (resolve) {
+                    resolve(value);
+                }
+                return true;
+            }; }, function (error) { return _this._promiseResolverForRPGAtsumaruPlugin = function () {
+                for (var key in _this._eventInfo) {
+                    error[key] = _this._eventInfo[key];
+                }
+                error.line = _this._index + 1;
+                error.eventCommand = "plugin_command";
+                error.content = _this._params[0];
+                switch (error.code) {
                     case "BAD_REQUEST":
-                        SceneManager.catchException(error);
-                        break;
+                        throw error;
+                    case "UNAUTHORIZED":
+                    case "FORBIDDEN":
                     case "INTERNAL_SERVER_ERROR":
                     case "API_CALL_LIMIT_EXCEEDED":
                     default:
-                        that._waitForScoreboardPlugin = false;
-                        var message = error.message;
-                        if (message.length > 27) {
-                            message = message.slice(0, 27) + "\n" + message.slice(27);
+                        console.error(error.code + ": " + error.message);
+                        console.error(error.stack);
+                        if (Graphics._showErrorDetail && Graphics._formatEventInfo && Graphics._formatEventCommandInfo) {
+                            var eventInfo = Graphics._formatEventInfo(error);
+                            var eventCommandInfo = Graphics._formatEventCommandInfo(error);
+                            console.error(eventCommandInfo ? eventInfo + ", " + eventCommandInfo : eventInfo);
                         }
-                        recordsFromScoreboard = { errorMessage: message };
-                        console.error(error);
-                        break;
-                    }
-                });
-            }
-        } else if (command === "GetDataFromScoreboardRecords" || command === "スコア取得") {
-            if (args.length < 2) {
-                throw new Error("「" + command + "」コマンドでは、targetとvariableIdを両方指定してください");
-            }
-            var target = args[0];
-            variableId = Number(args[1]);
-            if (!isValidVariableId(variableId)) {
-                throw new Error("「" + command + "」コマンドでは、variableIdには1～" + variableMax + "までの整数を指定してください。variableId: " + args[1]);
-            }
-            if (!recordsFromScoreboard) {
-                $gameVariables.setValue(variableId, 0);
-                return;
-            }
-            var result;
-            try {
-                result = (new Function("return this." + target)).call(recordsFromScoreboard);
-            } catch (e) {
-                //エラーは握りつぶしてuserNameだけ空データを入れる
-                if (/\.userName$/.test(target)) {
-                    result = "";
+                        $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
+                        _this._index++;
+                        delete _this._promiseResolverForRPGAtsumaruPlugin;
+                        if (reject) {
+                            reject(error);
+                        }
+                        return true;
+                }
+            }; });
+        };
+        // 通信待機中はこのコマンドで足踏みし、通信に成功または失敗した時にPromiseの続きを解決する
+        // このタイミングまで遅延することで、以下のようなメリットが生まれる
+        // １．解決が次のコマンドの直前なので、他の並列処理に結果を上書きされない
+        // ２．ゲームループ内でエラーが発生するので、エラー発生箇所とスタックトレースが自然に詳細化される
+        // ３．ソフトリセット後、リセット前のexecuteCommandは叩かれなくなるので、
+        //     リセット前のPromiseのresolverがリセット後のグローバルオブジェクトを荒らす事故がなくなる
+        hook(Game_Interpreter, "executeCommand", function (origin) { return function () {
+            if (this._promiseResolverForRPGAtsumaruPlugin) {
+                var resolved = this._promiseResolverForRPGAtsumaruPlugin();
+                if (!resolved) {
+                    return false;
                 }
             }
-            switch(typeof result) {
+            return origin.apply(this, arguments);
+        }; });
+    }
+
+    function toDefined(value, command, name) {
+        if (value === undefined) {
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定してください。");
+        }
+        else {
+            return value;
+        }
+    }
+    function toInteger(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isInteger(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には整数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toNatural(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isNatural(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toValidVariableId(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isValidVariableId(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には1～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toValidVariableIdOrUndefined(value, command, name) {
+        if (value === undefined) {
+            return value;
+        }
+        var number = +value;
+        if (isNumber(value) && isValidVariableId(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定する場合は1～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + name + ": " + value);
+        }
+    }
+
+    /*:
+     * @plugindesc RPGアツマールのスコアボードのプラグインです
+     * @author RPGアツマール開発チーム
+     *
+     * @help
+     *
+     * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
+     *   SetRecordToScoreboard <boardId> <variableId>
+     *   スコア送信 <boardId> <variableId>
+     *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
+     *      # 送信できるスコアの値は整数のみ。（負の整数可）
+     *      # 例: SetRecordToScoreboard 1 6
+     *      #   : スコア送信 1 6
+     *
+     *   SetRecordToScoreboard <boardId> <variableId> <errorVariableId>
+     *   スコア送信 <boardId> <variableId> <errorVariableId>
+     *      # 変数<variableId>からスコアを読み取り、スコアボード<boardId>にセットする。
+     *      # 送信できるスコアの値は整数のみ。（負の整数可）
+     *      # また、変数<errorVariableId>に
+     *          スコアの送信に失敗した場合はエラーメッセージ、成功した場合は0がセットされる
+     *      # 例: SetRecordToScoreboard 1 6 7
+     *      #   : スコア送信 1 6 7
+     *
+     *   DisplayScoreboard <boardId>
+     *   スコア表示 <boardId>
+     *      # スコアボード<boardId>を開く
+     *      # 例: DisplayScoreboard 1
+     *      #   : スコア表示 1
+     *
+     *   FetchRecordsFromScoreboard <boardId>
+     *   スコア受信 <boardId>
+     *      # スコアボード<boardId>をサーバから読み込んで準備する
+     *      # 例: FetchRecordsFromScoreboard 1
+     *      #   : スコア受信 1
+     *
+     *   GetDataFromScoreboardRecords <target> <variableId>
+     *   スコア取得 <target> <variableId>
+     *      # 準備したスコアボードから<target>情報を読み込んで変数<variableId>にセットする。
+     *      # 準備ができてない場合は0がセットされる。
+     *      # 例: GetDataFromScoreboardRecords ranking[0].score 7
+     *      #   : スコア取得 ranking[0].score 7
+     *
+     *      target一覧
+     *          myRecord # 今回の自己レコードがある場合は1、ない場合は0がセットされる
+     *          myRecord.rank # 今回の自己レコードの順位、ない場合は0がセットされる
+     *          myRecord.score # 今回の自己レコードのスコア、ない場合は0がセットされる
+     *          myRecord.isNewRecord # 今回の自己レコードが自己新記録なら1、そうでない場合は0がセットされる
+     *          ranking.length # ランキングデータの長さ
+     *          ranking[n].rank # n+1番目の人の順位がセットされる
+     *          ranking[n].userName # n+1番目の人のユーザ名がセットされる
+     *          ranking[n].score # n+1番目の人のスコアがセットされる
+     *          myBestRecord # 自己最高記録がある場合は1、ない場合（または非ログイン）は0がセットされる
+     *          myBestRecord.rank # 自己最高記録の順位、ない場合（または非ログイン）は0がセットされる
+     *          myBestRecord.score # 自己最高記録のスコア、ない場合（または非ログイン）は0がセットされる
+     *          errorMessage # スコアの読み込みに失敗した場合はエラーメッセージ、成功した場合は0がセットされる
+     *
+     * スコアボードの仕様:
+     *      <boardId>は、1〜（ボードの数）までの整数 ボードの数の初期値は10
+     *      登録したスコアは、そのプレイヤーがプレミアム会員の場合は永続保存される
+     *      プレイヤーが一般会員だとボードごとに最新100ユーザしか保存されない
+     *
+     * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
+     *      SetRecordToScoreboard（スコア送信）
+     *          無視される（変数<errorVariableId>には何もセットされない）
+     *      DisplayScoreboard（スコア表示）
+     *          無視される
+     *      FetchRecordsFromScoreboard（スコア受信）
+     *          無視される
+     *      GetDataFromScoreboardRecords（スコア取得）
+     *          どの<target>を指定しても、結果はすべて0がセットされる
+     */
+    var scoreboards = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.scoreboards;
+    var setRecord = scoreboards && scoreboards.setRecord;
+    var display = scoreboards && scoreboards.display;
+    var getRecords = scoreboards && scoreboards.getRecords;
+    var recordsFromScoreboard = null;
+    prepareBindPromise();
+    addPluginCommand({
+        SetRecordToScoreboard: SetRecordToScoreboard,
+        "スコア送信": SetRecordToScoreboard,
+        DisplayScoreboard: DisplayScoreboard,
+        "スコア表示": DisplayScoreboard,
+        FetchRecordsFromScoreboard: FetchRecordsFromScoreboard,
+        "スコア受信": FetchRecordsFromScoreboard,
+        GetDataFromScoreboardRecords: GetDataFromScoreboardRecords,
+        "スコア取得": GetDataFromScoreboardRecords
+    });
+    function SetRecordToScoreboard(command, boardIdStr, variableIdStr, errorVariableIdStr) {
+        var boardId = toNatural(boardIdStr, command, "boardId");
+        var variableId = toValidVariableId(variableIdStr, command, "variableId");
+        var errorVariableId = toValidVariableIdOrUndefined(errorVariableIdStr, command, "errorVariableId");
+        var score = toInteger($gameVariables.value(variableId), command, "score");
+        if (setRecord) {
+            if (errorVariableId === undefined) {
+                this.bindPromiseForRPGAtsumaruPlugin(setRecord(boardId, score));
+            }
+            else {
+                this.bindPromiseForRPGAtsumaruPlugin(setRecord(boardId, score), function () { return $gameVariables.setValue(errorVariableId, 0); }, function (error) { return $gameVariables.setValue(errorVariableId, error.message); });
+            }
+        }
+    }
+    function DisplayScoreboard(command, boardIdStr) {
+        var boardId = toNatural(boardIdStr, command, "boardId");
+        if (display) {
+            this.bindPromiseForRPGAtsumaruPlugin(display(boardId));
+        }
+    }
+    function FetchRecordsFromScoreboard(command, boardIdStr) {
+        var boardId = toNatural(boardIdStr, command, "boardId");
+        if (getRecords) {
+            this.bindPromiseForRPGAtsumaruPlugin(getRecords(boardId), function (value) { return recordsFromScoreboard = value; }, function (error) { return recordsFromScoreboard = { errorMessage: error.message }; });
+        }
+    }
+    function GetDataFromScoreboardRecords(command, target, variableIdStr) {
+        target = toDefined(target, command, "target");
+        var variableId = toValidVariableId(variableIdStr, command, "variableId");
+        if (!recordsFromScoreboard) {
+            $gameVariables.setValue(variableId, 0);
+            return;
+        }
+        var result;
+        try {
+            result = (new Function("return this." + target)).call(recordsFromScoreboard);
+        }
+        catch (e) {
+            //エラーは握りつぶしてuserNameだけ空データを入れる
+            if (/\.userName$/.test(target)) {
+                result = "";
+            }
+        }
+        switch (typeof result) {
             case "undefined":
             case "object": // nullもここ
             case "symbol":
@@ -231,12 +309,7 @@
             default:
                 $gameVariables.setValue(variableId, result);
                 break;
-            }
         }
-    };
-    var _Game_Interpreter_updateWait = Game_Interpreter.prototype.updateWait;
-    Game_Interpreter.prototype.updateWait = function() {
-        var result = _Game_Interpreter_updateWait.apply(this, arguments);
-        return result || Boolean(this._waitForScoreboardPlugin);
-    };
-})();
+    }
+
+}());

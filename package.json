@@ -5,22 +5,30 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@atsumaru/api-types": "atsumaru/api-types",
     "editorconfig-tools": "^0.1.1",
     "eslint": "^4.19.1",
     "eslint-plugin-compat": "^2.2.0",
+    "glob": "^7.1.3",
     "husky": "^0.14.3",
-    "lint-staged": "^7.0.4"
+    "lint-staged": "^7.0.4",
+    "rollup": "^0.67.3",
+    "rollup-plugin-typescript": "^1.0.0",
+    "tslib": "^1.9.3",
+    "typescript": "^3.2.2",
+    "typescript-eslint-parser": "^21.0.2"
   },
   "scripts": {
-    "lint": "eslint --fix plugins",
-    "precommit": "lint-staged"
+    "lint": "eslint --fix src plugins",
+    "precommit": "lint-staged && rollup -c && git add .",
+    "compile": "rollup -c"
   },
   "lint-staged": {
     "*.{json,md}": [
       "editorconfig-tools fix",
       "git add"
     ],
-    "*.{js,jsx}": [
+    "*.ts": [
       "eslint --fix",
       "git add"
     ]
