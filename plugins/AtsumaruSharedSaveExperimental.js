@@ -1,0 +1,274 @@
+//=============================================================================
+// AtsumaruSharedSaveExperimental.js
+//
+// Copyright (c) 2018 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Released under the MIT license
+// http://opensource.org/licenses/mit-license.php
+//=============================================================================
+
+(function () {
+    'use strict';
+
+    function isNumber(value) {
+        return value !== "" && !isNaN(value);
+    }
+    function isInteger(value) {
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
+    }
+    function isNatural(value) {
+        return isInteger(value) && value > 0;
+    }
+    function isValidVariableId(variableId) {
+        return isNatural(variableId) && variableId < $dataSystem.variables.length;
+    }
+
+    // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
+    function hook(baseClass, target, f) {
+        baseClass.prototype[target] = f(baseClass.prototype[target]);
+    }
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
+    }
+    // プラグインコマンドを追加する
+    function addPluginCommand(commands) {
+        hook(Game_Interpreter, "pluginCommand", function (origin) { return function (command, args) {
+            origin.apply(this, arguments);
+            if (commands[command]) {
+                commands[command].apply(this, [command].concat(args));
+            }
+        }; });
+    }
+    // Promiseが終了するまでイベントコマンドをウェイトするための処理を追加する
+    function prepareBindPromise() {
+        if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
+            return;
+        }
+        // ソフトリセットのタイミングでローディングカウンターを初期化
+        hook(Game_Temp, "initialize", function (origin) { return function () {
+            origin.apply(this, arguments);
+            this._loadingCounterForRPGAtsumaruPlugin = 0;
+        }; });
+        // 通信中のセーブは許可しない。ハードリセットしてロードした後、
+        // その通信がどんな結果だったのか、成功したか失敗したかなどを復元する方法はもはやないため
+        hookStatic(DataManager, "saveGame", function (origin) { return function () {
+            return $gameTemp._loadingCounterForRPGAtsumaruPlugin === 0 && origin.apply(this, arguments);
+        }; });
+        // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
+        Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin = function (promise, resolve, reject) {
+            var _this = this;
+            var $gameTempLocal = $gameTemp;
+            $gameTempLocal._loadingCounterForRPGAtsumaruPlugin++;
+            this._index--;
+            this._promiseResolverForRPGAtsumaruPlugin = function () { return false; };
+            promise.then(function (value) { return _this._promiseResolverForRPGAtsumaruPlugin = function () {
+                $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
+                _this._index++;
+                delete _this._promiseResolverForRPGAtsumaruPlugin;
+                if (resolve) {
+                    resolve(value);
+                }
+                return true;
+            }; }, function (error) { return _this._promiseResolverForRPGAtsumaruPlugin = function () {
+                for (var key in _this._eventInfo) {
+                    error[key] = _this._eventInfo[key];
+                }
+                error.line = _this._index + 1;
+                error.eventCommand = "plugin_command";
+                error.content = _this._params[0];
+                switch (error.code) {
+                    case "BAD_REQUEST":
+                        throw error;
+                    case "UNAUTHORIZED":
+                    case "FORBIDDEN":
+                    case "INTERNAL_SERVER_ERROR":
+                    case "API_CALL_LIMIT_EXCEEDED":
+                    default:
+                        console.error(error.code + ": " + error.message);
+                        console.error(error.stack);
+                        if (Graphics._showErrorDetail && Graphics._formatEventInfo && Graphics._formatEventCommandInfo) {
+                            var eventInfo = Graphics._formatEventInfo(error);
+                            var eventCommandInfo = Graphics._formatEventCommandInfo(error);
+                            console.error(eventCommandInfo ? eventInfo + ", " + eventCommandInfo : eventInfo);
+                        }
+                        $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
+                        _this._index++;
+                        delete _this._promiseResolverForRPGAtsumaruPlugin;
+                        if (reject) {
+                            reject(error);
+                        }
+                        return true;
+                }
+            }; });
+        };
+        // 通信待機中はこのコマンドで足踏みし、通信に成功または失敗した時にPromiseの続きを解決する
+        // このタイミングまで遅延することで、以下のようなメリットが生まれる
+        // １．解決が次のコマンドの直前なので、他の並列処理に結果を上書きされない
+        // ２．ゲームループ内でエラーが発生するので、エラー発生箇所とスタックトレースが自然に詳細化される
+        // ３．ソフトリセット後、リセット前のexecuteCommandは叩かれなくなるので、
+        //     リセット前のPromiseのresolverがリセット後のグローバルオブジェクトを荒らす事故がなくなる
+        hook(Game_Interpreter, "executeCommand", function (origin) { return function () {
+            if (this._promiseResolverForRPGAtsumaruPlugin) {
+                var resolved = this._promiseResolverForRPGAtsumaruPlugin();
+                if (!resolved) {
+                    return false;
+                }
+            }
+            return origin.apply(this, arguments);
+        }; });
+    }
+
+    function toDefined(value, command, name) {
+        if (value === undefined) {
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定してください。");
+        }
+        else {
+            return value;
+        }
+    }
+    function toNatural(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isNatural(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toValidVariableId(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isValidVariableId(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には1～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toTypedParameters(parameters, isArray) {
+        if (isArray === void 0) { isArray = false; }
+        var result = isArray ? [] : {};
+        for (var key in parameters) {
+            try {
+                var value = JSON.parse(parameters[key]);
+                result[key] = value instanceof Array ? toTypedParameters(value, true)
+                    : value instanceof Object ? toTypedParameters(value)
+                        : value;
+            }
+            catch (error) {
+                result[key] = parameters[key];
+            }
+        }
+        return result;
+    }
+    function ensureValidVariableIds(parameters) {
+        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
+            if (!origin.apply(this, arguments)) {
+                return false;
+            }
+            for (var key in parameters) {
+                var variableId = parameters[key];
+                if (variableId !== 0 && !isValidVariableId(variableId)) {
+                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                }
+            }
+            return true;
+        }; });
+    }
+
+    /*:
+     * @plugindesc RPGアツマールの共有セーブのための(Experimental版)プラグインです
+     * @author RPGアツマール開発チーム
+     *
+     * @param startVariableId
+     * @type variable
+     * @text 共有セーブの保存範囲(開始)
+     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
+     * @default 0
+     *
+     * @param finishVariableId
+     * @type variable
+     * @text 共有セーブの保存範囲(終了)
+     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
+     * @default 0
+     *
+     * @param errorMessage
+     * @type variable
+     * @text エラーメッセージ
+     * @desc エラーが発生した場合に、エラーメッセージを代入する変数の番号を指定します。
+     * @default 0
+     *
+     * @help
+     * このプラグインは、アツマールAPIの共有セーブを利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/shared-save)を参照してください。
+     *
+     * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
+     *   SetSharedSave
+     *   共有セーブ保存
+     *      # 共有セーブの保存範囲(開始-終了)で指定した範囲の変数を読み込み、
+     *          自分の共有セーブとして保存します。
+     *      # 例: SetSharedSave
+     *      #   : 共有セーブ保存
+     *
+     *   GetSharedSave <userIdVariableId> <startVariableId>
+     *   共有セーブ取得 <userIdVariableId> <startVariableId>
+     *      # 変数<userIdVariableId>からユーザーIDを読み取り、
+     *          そのユーザーの共有セーブを<startVariableId>を先頭にして代入します。
+     *      # 例: GetSharedSave 1 201
+     *      #   : 共有セーブ取得 1 201
+     *          （共有セーブの保存範囲が101-150で計50個の場合、ユーザーID1番の人の共有セーブを201-250に代入）
+     *
+     * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
+     *      SetSharedSave（共有セーブ保存）
+     *          無視される（エラーメッセージにも何も代入されない）
+     *      GetSharedSave（共有セーブ取得）
+     *          無視される（エラーメッセージにも何も代入されない）
+     *
+     * 備考:
+     * ・本プラグインは、共有セーブの保存領域をすべて使用します。
+     *      そのため、共有セーブを活用する他のプラグインと共存することはできません。
+     * ・ゲームを公開後に共有セーブの保存範囲を変更する時は、
+     *      古い保存範囲のセーブデータとの互換性にご注意ください。
+     */
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruSharedSaveExperimental"));
+    var setItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.setItems;
+    var getSharedItems = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.storage && window.RPGAtsumaru.experimental.storage.getSharedItems;
+    ensureValidVariableIds(parameters);
+    prepareBindPromise();
+    addPluginCommand({
+        SetSharedSave: SetSharedSave,
+        "共有セーブ保存": SetSharedSave,
+        GetSharedSave: GetSharedSave,
+        "共有セーブ取得": GetSharedSave
+    });
+    function SetSharedSave() {
+        var variables = [];
+        for (var i = parameters.startVariableId; i <= parameters.finishVariableId; i++) {
+            variables.push($gameVariables.value(i));
+        }
+        var value = JSON.stringify(variables);
+        if (setItems) {
+            this.bindPromiseForRPGAtsumaruPlugin(setItems([{ key: "Atsumaru Shared", value: value }]), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+        }
+    }
+    function GetSharedSave(command, userIdVariableIdStr, startVariableIdStr) {
+        var userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
+        var userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
+        var startVariableId = toValidVariableId(startVariableIdStr, command, "startVariableId");
+        if (getSharedItems) {
+            this.bindPromiseForRPGAtsumaruPlugin(getSharedItems([userId]), function (sharedSaves) {
+                if (sharedSaves[userId]) {
+                    var variables = JSON.parse(sharedSaves[userId]);
+                    for (var i = 0; i < variables.length; i++) {
+                        $gameVariables.setValue(i + startVariableId, variables[i]);
+                    }
+                    $gameVariables.setValue(parameters.errorMessage, 0);
+                }
+                else {
+                    $gameVariables.setValue(parameters.errorMessage, "指定したユーザーの共有セーブは見つかりませんでした");
+                }
+            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+        }
+    }
+
+}());
