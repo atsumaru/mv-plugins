@@ -3,6 +3,8 @@
  * @author RPGアツマール開発チーム
  *
  * @help
+ * このプラグインは、アツマールAPIの「スクリーンショット撮影」を利用するためのプラグインです。
+ * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/screenshot)を参照してください。
  *
  * プラグインコマンド:
  *   DisplayScreenshotModal         # スクリーンショットモーダルを表示

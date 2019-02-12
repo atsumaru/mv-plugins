@@ -3,6 +3,8 @@
  * @author RPGアツマール開発チーム
  *
  * @help
+ * このプラグインは、アツマールAPIの「作者情報ダイアログ」を利用するためのプラグインです。
+ * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/creator-modal)を参照してください。
  *
  * プラグインコマンド:
  *   DisplayCreatorInformationModal <niconicoUserId>        # 指定した<niconicoUserId>の作者情報ダイアログを表示します。省略した場合は現在のゲームの作者の作者情報ダイアログを表示します。
