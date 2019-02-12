@@ -60,6 +60,8 @@
      * @author RPGアツマール開発チーム
      *
      * @help
+     * このプラグインは、アツマールAPIの「クエリ取得」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/copy-query)を参照してください。
      *
      * プラグインコマンド:
      *   CopyQuery <id1> <id2>...         # param1をid1にコピー、param2をid2にコピー

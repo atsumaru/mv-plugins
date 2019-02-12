@@ -109,6 +109,8 @@
      * @author RPGアツマール開発チーム
      *
      * @help
+     * このプラグインは、アツマールAPIの「外部リンク表示」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/popup)を参照してください。
      *
      * プラグインコマンド:
      *   OpenLink <url>         # <url>を開く

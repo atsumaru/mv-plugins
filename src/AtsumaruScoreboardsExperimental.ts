@@ -3,6 +3,8 @@
  * @author RPGアツマール開発チーム
  *
  * @help
+ * このプラグインは、アツマールAPIの「スコアボード」を利用するためのプラグインです。
+ * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/scoreboard)を参照してください。
  *
  * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
  *   SetRecordToScoreboard <boardId> <variableId>
