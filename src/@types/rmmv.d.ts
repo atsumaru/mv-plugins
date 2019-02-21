@@ -56,6 +56,8 @@ declare const ResourceHandler: any;
 declare const DataManager: {
     saveGame(savefileId: number): boolean
     isDatabaseLoaded(): boolean
+    createGameObjects(): void
+    extractSaveContents(): void
 };
 declare const ConfigManager: any;
 declare const StorageManager: any;
