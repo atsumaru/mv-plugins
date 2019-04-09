@@ -23,27 +23,12 @@ export function prepareBindPromise() {
         return;
     }
 
-    // ソフトリセットのタイミングでローディングカウンターを初期化
-    hook(Game_Temp, "initialize", origin => function(this: Game_Temp) {
-        origin.apply(this, arguments as any);
-        this._loadingCounterForRPGAtsumaruPlugin = 0;
-    });
-
-    // 通信中のセーブは許可しない。ハードリセットしてロードした後、
-    // その通信がどんな結果だったのか、成功したか失敗したかなどを復元する方法はもはやないため
-    hookStatic(DataManager, "saveGame", origin => function(this: typeof DataManager) {
-        return $gameTemp._loadingCounterForRPGAtsumaruPlugin === 0 && origin.apply(this, arguments as any);
-    });
-
     // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
     Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin = function<T>(promise: Promise<T>, resolve?: (value: T) => void, reject?: (error: AtsumaruApiError) => void) {
-        const $gameTempLocal = $gameTemp;
-        $gameTempLocal._loadingCounterForRPGAtsumaruPlugin++;
         this._index--;
         this._promiseResolverForRPGAtsumaruPlugin = () => false;
         promise.then(
             value => this._promiseResolverForRPGAtsumaruPlugin = () => {
-                $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
                 this._index++;
                 delete this._promiseResolverForRPGAtsumaruPlugin;
                 if (resolve) {
@@ -73,7 +58,6 @@ export function prepareBindPromise() {
                         const eventCommandInfo = Graphics._formatEventCommandInfo(error);
                         console.error(eventCommandInfo ? eventInfo + ", " + eventCommandInfo : eventInfo);
                     }
-                    $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
                     this._index++;
                     delete this._promiseResolverForRPGAtsumaruPlugin;
                     if (reject) {

@@ -70,6 +70,10 @@
  *          無視される
  *      GetDataFromScoreboardRecords（スコア取得）
  *          どの<target>を指定しても、結果はすべて0がセットされる
+ *
+ * ※「並列処理」の中でプラグインコマンドを利用しますと
+ *   その時セーブしたセーブデータの状態が不確定になりますので、
+ *   可能な限り「並列処理」以外のトリガーでご利用ください。
  */
 import { toDefined, toInteger, toNatural, toValidVariableId, toValidVariableIdOrUndefined } from "./utils/parameter";
 import { addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";

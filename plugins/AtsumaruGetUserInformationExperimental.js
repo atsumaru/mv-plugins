@@ -43,25 +43,12 @@
         if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
             return;
         }
-        // ソフトリセットのタイミングでローディングカウンターを初期化
-        hook(Game_Temp, "initialize", function (origin) { return function () {
-            origin.apply(this, arguments);
-            this._loadingCounterForRPGAtsumaruPlugin = 0;
-        }; });
-        // 通信中のセーブは許可しない。ハードリセットしてロードした後、
-        // その通信がどんな結果だったのか、成功したか失敗したかなどを復元する方法はもはやないため
-        hookStatic(DataManager, "saveGame", function (origin) { return function () {
-            return $gameTemp._loadingCounterForRPGAtsumaruPlugin === 0 && origin.apply(this, arguments);
-        }; });
         // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
         Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin = function (promise, resolve, reject) {
             var _this = this;
-            var $gameTempLocal = $gameTemp;
-            $gameTempLocal._loadingCounterForRPGAtsumaruPlugin++;
             this._index--;
             this._promiseResolverForRPGAtsumaruPlugin = function () { return false; };
             promise.then(function (value) { return _this._promiseResolverForRPGAtsumaruPlugin = function () {
-                $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
                 _this._index++;
                 delete _this._promiseResolverForRPGAtsumaruPlugin;
                 if (resolve) {
@@ -90,7 +77,6 @@
                             var eventCommandInfo = Graphics._formatEventCommandInfo(error);
                             console.error(eventCommandInfo ? eventInfo + ", " + eventCommandInfo : eventInfo);
                         }
-                        $gameTempLocal._loadingCounterForRPGAtsumaruPlugin--;
                         _this._index++;
                         delete _this._promiseResolverForRPGAtsumaruPlugin;
                         if (reject) {
@@ -226,6 +212,10 @@
      * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
      *      GetUserInformation（特定ユーザー取得）
      *          無視される（エラーメッセージにも何も代入されない）
+     *
+     * ※「並列処理」の中でプラグインコマンドを利用しますと
+     *   その時セーブしたセーブデータの状態が不確定になりますので、
+     *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
     var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetUserInformationExperimental"));
     var getUserInformation = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getUserInformation;
