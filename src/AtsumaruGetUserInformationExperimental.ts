@@ -48,6 +48,10 @@
  * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
  *      GetUserInformation（特定ユーザー取得）
  *          無視される（エラーメッセージにも何も代入されない）
+ *
+ * ※「並列処理」の中でプラグインコマンドを利用しますと
+ *   その時セーブしたセーブデータの状態が不確定になりますので、
+ *   可能な限り「並列処理」以外のトリガーでご利用ください。
  */
 
 import { toNatural, toValidVariableId, toTypedParameters, ensureValidVariableIds } from "./utils/parameter";

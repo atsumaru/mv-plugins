@@ -70,7 +70,6 @@ declare const BattleManager: any;
 declare const PluginManager: any;
 
 declare class Game_Temp {
-    _loadingCounterForRPGAtsumaruPlugin: number
     initialize(): void
 }
 declare const Game_System: any;
