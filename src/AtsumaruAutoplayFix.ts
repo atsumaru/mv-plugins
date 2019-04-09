@@ -1,8 +1,12 @@
 /*:
- * @plugindesc すべてのブラウザで自動再生起因による動画再生の失敗を修正するプラグインです。 コアスクリプトの https://github.com/rpgtkoolmv/corescript/pull/140 こちらの修正の先行実装になります。
+ * @plugindesc すべてのブラウザで自動再生起因による動画再生の失敗を修正するプラグインです。
  * @author RPGアツマール開発チーム
  *
- * @help プラグインを有効にするだけで動画再生の修正を行います。
+ * @help
+ * プラグインを有効にするだけで動画再生の修正を行います。
+ * コミュニティ版コアスクリプトにて対応される修正
+ * (https://github.com/rpgtkoolmv/corescript/pull/140)
+ * の先行実装になります。
  */
 
 import { hookStatic } from "./utils/rmmvbridge";
