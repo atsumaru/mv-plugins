@@ -9,9 +9,22 @@
 (function () {
     'use strict';
 
+    function isInteger(value) {
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
+    }
+    function isNatural(value) {
+        return isInteger(value) && value > 0;
+    }
+    function isValidVariableId(variableId) {
+        return isNatural(variableId) && variableId < $dataSystem.variables.length;
+    }
+
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
+    }
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
     }
     // プラグインコマンドを追加する
     function addPluginCommand(commands) {
@@ -87,9 +100,91 @@
         }; });
     }
 
+    function toTypedParameters(parameters, isArray) {
+        if (isArray === void 0) { isArray = false; }
+        var result = isArray ? [] : {};
+        for (var key in parameters) {
+            try {
+                var value = JSON.parse(parameters[key]);
+                result[key] = value instanceof Array ? toTypedParameters(value, true)
+                    : value instanceof Object ? toTypedParameters(value)
+                        : value;
+            }
+            catch (error) {
+                result[key] = parameters[key];
+            }
+        }
+        return result;
+    }
+    function ensureValidVariableIds(parameters) {
+        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
+            if (!origin.apply(this, arguments)) {
+                return false;
+            }
+            for (var key in parameters) {
+                var variableId = parameters[key];
+                if (variableId !== 0 && !isValidVariableId(variableId)) {
+                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                }
+            }
+            return true;
+        }; });
+    }
+
     /*:
      * @plugindesc RPGアツマールのスクリーンショットAPI操作のための(Experimental版)プラグインです
      * @author RPGアツマール開発チーム
+     *
+     * @param tweetText
+     * @type variable
+     * @text ツイート文章
+     * @desc ここで指定した変数に文章を代入すると、ツイート内容の文章部分が書き換わります。
+     * @default 0
+     *
+     * @param param1
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param2
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param3
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param4
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param5
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param6
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param7
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param8
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
+     *
+     * @param param9
+     * @type variable
+     * @desc ここで指定した変数に値を代入すると、ツイート内容のゲームURLにクエリが付加されます。
+     * @default 0
      *
      * @help
      * このプラグインは、アツマールAPIの「スクリーンショット撮影」を利用するためのプラグインです。
@@ -98,8 +193,31 @@
      * プラグインコマンド:
      *   DisplayScreenshotModal         # スクリーンショットモーダルを表示
      *   スクリーンショットモーダル表示         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
+     *
+     * ツイート文章の変更:
+     *   プラグインパラメータ「ツイート文章」に変数の番号を指定しておくと、
+     *   その変数の内容をスクリーンショットモーダル下部のツイート内容に反映させることができます。
+     *   変数に文章を代入するには、「変数の操作」で「スクリプト」を選び、
+     *   '文章' のように ' で囲む必要があります。下の例のように ' が含まれていることを確認してください。
+     *
+     *   例：◆変数の操作：#0001 ツイート文章 = 'このユーザーの運勢は【大吉】でした #占い'
+     *     => ツイート内容が以下のようになります。
+     *         このユーザーの運勢は【大吉】でした #占い #(ゲームID) #RPGアツマール (ゲームURL)
+     *
+     * ツイート内容のゲームURLにクエリを付与する:
+     *   プラグインパラメータ「param1 - param9」に変数の番号を指定しておくと、
+     *   その変数の内容をツイート内容のゲームURLにクエリを付加させることができます。
+     *   クエリ取得プラグインなどと合わせて、ゲームURLを使って情報を受け渡すことができるので、
+     *   ツイートからゲームを訪れた際に特殊な処理をしたりできます。
+     *   詳しくはAPIリファレンス（このヘルプの最上部にアドレスがあります）をご参照ください。
+     *
      */
-    var displayModal = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.screenshot && window.RPGAtsumaru.experimental.screenshot.displayModal;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruScreenshotExperimental"));
+    var variableIds = Object.keys(parameters).map(function (key) { return parameters[key]; });
+    var screenshot = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.screenshot;
+    var displayModal = screenshot && screenshot.displayModal;
+    var setTweetMessage = screenshot && screenshot.setTweetMessage;
+    ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
         DisplayScreenshotModal: DisplayScreenshotModal,
@@ -109,6 +227,30 @@
         if (displayModal) {
             this.bindPromiseForRPGAtsumaruPlugin(displayModal());
         }
+    }
+    if (setTweetMessage) {
+        hookStatic(DataManager, "createGameObjects", function (origin) { return function () {
+            origin.apply(this, arguments);
+            setTweetMessage(null);
+        }; });
+        hook(Scene_Title, "start", function (origin) { return function () {
+            origin.apply(this, arguments);
+            setTweetMessage(null);
+        }; });
+        hook(Game_Variables, "setValue", function (origin) { return function (variableId, _) {
+            origin.apply(this, arguments);
+            if (variableIds.indexOf(variableId) >= 0) {
+                var tweetSettings = {};
+                for (var key in parameters) {
+                    var variableId_1 = parameters[key];
+                    var value = $gameVariables.value(variableId_1);
+                    if (value) {
+                        tweetSettings[key] = String(value);
+                    }
+                }
+                setTweetMessage(tweetSettings);
+            }
+        }; });
     }
 
 }());
