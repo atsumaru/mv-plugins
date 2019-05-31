@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "@atsumaru/api-types": "atsumaru/api-types",
+    "@atsumaru/api-types": "atsumaru/api-types#master",
     "editorconfig-tools": "^0.1.1",
     "eslint": "^4.19.1",
     "eslint-plugin-compat": "^2.2.0",

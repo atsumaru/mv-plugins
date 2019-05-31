@@ -76,7 +76,7 @@
         var idStrList = Array.prototype.slice.call(arguments, 1);
         for (var i = 0; i < idStrList.length; ++i) {
             var key = "param" + String(i + 1);
-            $gameVariables.setValue(toValidVariableId(idStrList[i], command, "id" + (i + 1)), query ? query[key] : "");
+            $gameVariables.setValue(toValidVariableId(idStrList[i], command, "id" + (i + 1)), query ? isNumber(query[key]) ? +query[key] : query[key] : 0);
         }
     }
 

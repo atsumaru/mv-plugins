@@ -76,7 +76,9 @@ declare const Game_System: any;
 declare const Game_Timer: any;
 declare const Game_Message: any;
 declare const Game_Switches: any;
-declare const Game_Variables: any;
+declare class Game_Variables {
+    setValue(variableId: number, value: any): void
+}
 declare const Game_SelfSwitches: any;
 declare const Game_Screen: any;
 declare const Game_Picture: any;
@@ -112,7 +114,9 @@ declare class Game_Interpreter {
 
 declare const Scene_Base: any;
 declare const Scene_Boot: any;
-declare const Scene_Title: any;
+declare class Scene_Title {
+    start(): void
+}
 declare const Scene_Map: any;
 declare const Scene_MenuBase: any;
 declare const Scene_Menu: any;
