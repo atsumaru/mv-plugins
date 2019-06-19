@@ -111,16 +111,6 @@
             return value;
         }
     }
-    function toInteger(value, command, name) {
-        value = toDefined(value, command, name);
-        var number = +value;
-        if (isNumber(value) && isInteger(number)) {
-            return number;
-        }
-        else {
-            throw new Error("「" + command + "」コマンドでは、" + name + "には整数を指定してください。" + name + ": " + value);
-        }
-    }
     function toNatural(value, command, name) {
         value = toDefined(value, command, name);
         var number = +value;
@@ -215,15 +205,27 @@
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
      *   TriggerCall <triggerId>
      *   トリガー発動 <triggerId>
-     *      # 指定した<triggerId>の「ゲーム内から実行」型トリガーを発動させる
+     *      # 指定した<triggerId>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
      *      # 例: TriggerCall 1
      *      #   : トリガー発動 1
      *
      *   TriggerCall <triggerId> <deltaVariableId>
      *   トリガー発動 <triggerId> <deltaVariableId>
-     *     # 変数<deltaVariableId>から増減値を読み取り、指定した<triggerId>の「ゲーム内で増減値を指定して実行」型トリガーを発動させる
+     *     # 変数<deltaVariableId>から値を読み取り、指定した<triggerId>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
      *     # 例: TriggerCall 1 5
      *     #   : トリガー発動 1 5
+     *
+     *   TriggerCallByName <globalServerVariableName> <triggerName>
+     *   名前でトリガー発動 <globalServerVariableName> <triggerName>
+     *      # 指定した<globalServerVariableName> <triggerName>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
+     *      # 例: TriggerCallByName 変数1 トリガー名1
+     *      #   : 名前でトリガー発動 変数1 トリガー名1
+     *
+     *   TriggerCallByName <globalServerVariableName> <triggerName> <valueVariableId>
+     *   名前でトリガー発動 <globalServerVariableName> <triggerName> <valueVariableId>
+     *     # 変数<valueVariableId>から値を読み取り、指定した<globalServerVariableName> <triggerName>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
+     *     # 例: TriggerCallByName 変数1 トリガー名1 5
+     *     #   : 名前でトリガー発動 変数1 トリガー名1 5
      *
      *   GetGlobalServerVariable <globalServerVariableId>
      *   グローバルサーバー変数取得 <globalServerVariableId>
@@ -231,6 +233,13 @@
      *          プラグインパラメータで指定した変数に値をセットする。
      *      # 例: GetGlobalServerVariable 1 2
      *      #   : グローバルサーバー変数取得 1 2
+     *
+     *   GetGlobalServerVariableByName <globalServerVariableName>
+     *   名前でグローバルサーバー変数取得 <globalServerVariableName>
+     *      # グローバルサーバー変数<globalServerVariableName>の情報（現在値・最小値・最大値・変数名）を読み込み、
+     *          プラグインパラメータで指定した変数に値をセットする。
+     *      # 例: GetGlobalServerVariableByName 変数1 2
+     *      #   : 名前でグローバルサーバー変数取得 変数1 2
      *
      * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
      *      TriggerCall（トリガー発動）
@@ -245,14 +254,20 @@
     var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariableExperimental"));
     var globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.globalServerVariable;
     var triggerCall = globalServerVariable && globalServerVariable.triggerCall;
+    var triggerCallByName = globalServerVariable && globalServerVariable.TriggerCallByName;
     var getGlobalServerVariable = globalServerVariable && globalServerVariable.getGlobalServerVariable;
+    var getGlobalServerVariableByName = globalServerVariable && globalServerVariable.getGlobalServerVariableByName;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
         TriggerCall: TriggerCall,
         "トリガー発動": TriggerCall,
+        TriggerCallByName: TriggerCallByName,
+        "名前でトリガー発動": TriggerCallByName,
         GetGlobalServerVariable: GetGlobalServerVariable,
-        "グローバルサーバー変数取得": GetGlobalServerVariable
+        "グローバルサーバー変数取得": GetGlobalServerVariable,
+        GetGlobalServerVariableByName: GetGlobalServerVariableByName,
+        "名前でグローバルサーバ変数取得": GetGlobalServerVariableByName
     });
     function TriggerCall(command, triggerIdStr, deltaVariableIdStr) {
         var triggerId = toNatural(triggerIdStr, command, "triggerId");
@@ -262,8 +277,20 @@
                 this.bindPromiseForRPGAtsumaruPlugin(triggerCall(triggerId), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
             }
             else {
-                var delta = toInteger($gameVariables.value(deltaVariableId), command, "delta");
+                var delta = $gameVariables.value(deltaVariableId);
                 this.bindPromiseForRPGAtsumaruPlugin(triggerCall(triggerId, delta), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+            }
+        }
+    }
+    function TriggerCallByName(command, globalServerVariableName, triggerName, valueVariableIdStr) {
+        var valueVariableId = toValidVariableIdOrUndefined(valueVariableIdStr, command, "valueVariableId");
+        if (triggerCallByName) {
+            if (valueVariableId === undefined) {
+                this.bindPromiseForRPGAtsumaruPlugin(triggerCallByName(globalServerVariableName, triggerName), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+            }
+            else {
+                var value = $gameVariables.value(valueVariableId);
+                this.bindPromiseForRPGAtsumaruPlugin(triggerCallByName(globalServerVariableName, triggerName, value), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
             }
         }
     }
@@ -271,6 +298,17 @@
         var globalServerVariableId = toNatural(globalServerVariableIdStr, command, "globalServerVariableId");
         if (getGlobalServerVariable) {
             this.bindPromiseForRPGAtsumaruPlugin(getGlobalServerVariable(globalServerVariableId), function (globalServerVariable) {
+                $gameVariables.setValue(parameters.value, globalServerVariable.value);
+                $gameVariables.setValue(parameters.minValue, globalServerVariable.minValue);
+                $gameVariables.setValue(parameters.maxValue, globalServerVariable.maxValue);
+                $gameVariables.setValue(parameters.name, globalServerVariable.name);
+                $gameVariables.setValue(parameters.errorMessage, 0);
+            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+        }
+    }
+    function GetGlobalServerVariableByName(command, globalServerVariableName) {
+        if (getGlobalServerVariableByName) {
+            this.bindPromiseForRPGAtsumaruPlugin(getGlobalServerVariableByName(globalServerVariableName), function (globalServerVariable) {
                 $gameVariables.setValue(parameters.value, globalServerVariable.value);
                 $gameVariables.setValue(parameters.minValue, globalServerVariable.minValue);
                 $gameVariables.setValue(parameters.maxValue, globalServerVariable.maxValue);
