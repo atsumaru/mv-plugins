@@ -65,15 +65,15 @@
  *   グローバルサーバー変数取得 <globalServerVariableId>
  *      # グローバルサーバー変数<globalServerVariableId>の情報（現在値・最小値・最大値・変数名）を読み込み、
  *          プラグインパラメータで指定した変数に値をセットする。
- *      # 例: GetGlobalServerVariable 1 2
- *      #   : グローバルサーバー変数取得 1 2
+ *      # 例: GetGlobalServerVariable 1
+ *      #   : グローバルサーバー変数取得 1
  *
  *   GetGlobalServerVariableByName <globalServerVariableName>
  *   名前でグローバルサーバー変数取得 <globalServerVariableName>
  *      # グローバルサーバー変数<globalServerVariableName>の情報（現在値・最小値・最大値・変数名）を読み込み、
  *          プラグインパラメータで指定した変数に値をセットする。
- *      # 例: GetGlobalServerVariableByName 変数1 2
- *      #   : 名前でグローバルサーバー変数取得 変数1 2
+ *      # 例: GetGlobalServerVariableByName 変数1
+ *      #   : 名前でグローバルサーバー変数取得 変数1
  *
  * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
  *      TriggerCall（トリガー発動）
