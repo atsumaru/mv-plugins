@@ -17,5 +17,5 @@ const options = Object.defineProperty({}, "passive", {
         document.addEventListener("wheel", function(event) { event.preventDefault(); }, { passive: false });
     }
 });
-window.addEventListener("test", null, options);
-window.removeEventListener("test", null, options);
+window.addEventListener("test", () => {}, options);
+window.removeEventListener("test", () => {}, options);
