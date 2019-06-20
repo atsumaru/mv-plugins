@@ -27,7 +27,7 @@
             document.addEventListener("wheel", function (event) { event.preventDefault(); }, { passive: false });
         }
     });
-    window.addEventListener("test", null, options);
-    window.removeEventListener("test", null, options);
+    window.addEventListener("test", function () { }, options);
+    window.removeEventListener("test", function () { }, options);
 
 }());
