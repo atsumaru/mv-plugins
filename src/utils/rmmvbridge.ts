@@ -1,3 +1,4 @@
+import { AtsumaruApiError } from "@atsumaru/api-types";
 // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
 export function hook<T extends {[P in K]: Function}, K extends keyof T>(baseClass: {prototype: T}, target: K, f: (origin: T[K]) => T[K]) {
     baseClass.prototype[target] = f(baseClass.prototype[target]);
