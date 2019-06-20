@@ -101,7 +101,7 @@ declare const window: Window;
 const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariableExperimental")) as Parameters;
 const globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.globalServerVariable;
 const triggerCall = globalServerVariable && globalServerVariable.triggerCall;
-const triggerCallByName = globalServerVariable && globalServerVariable.TriggerCallByName;
+const triggerCallByName = globalServerVariable && globalServerVariable.triggerCallByName;
 const getGlobalServerVariable = globalServerVariable && globalServerVariable.getGlobalServerVariable;
 const getGlobalServerVariableByName = globalServerVariable && globalServerVariable.getGlobalServerVariableByName;
 
