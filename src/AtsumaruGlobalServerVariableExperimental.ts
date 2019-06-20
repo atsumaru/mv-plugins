@@ -139,7 +139,7 @@ function TriggerCall(this: Game_Interpreter, command: string, triggerIdStr?: str
 }
 
 
-function TriggerCallByName(this: Game_Interpreter, command: string, globalServerVariableName?: string , triggerName?: string, valueVariableIdStr?: string) {
+function TriggerCallByName(this: Game_Interpreter, command: string, globalServerVariableName: string = "" , triggerName: string = "", valueVariableIdStr?: string) {
     const valueVariableId = toValidVariableIdOrUndefined(valueVariableIdStr, command, "valueVariableId");
     if (triggerCallByName) {
         if (valueVariableId === undefined) {
@@ -174,7 +174,7 @@ function GetGlobalServerVariable(this: Game_Interpreter, command: string, global
 }
 
 
-function GetGlobalServerVariableByName(this: Game_Interpreter, command: string, globalServerVariableName?: string) {
+function GetGlobalServerVariableByName(this: Game_Interpreter, command: string, globalServerVariableName: string = "") {
     if (getGlobalServerVariableByName) {
         this.bindPromiseForRPGAtsumaruPlugin(getGlobalServerVariableByName(globalServerVariableName),
             globalServerVariable => {
