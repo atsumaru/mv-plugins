@@ -39,25 +39,25 @@
  * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
  *   TriggerCall <triggerId>
  *   トリガー発動 <triggerId>
- *      # 指定した<triggerId>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
+ *      # 指定した<triggerId>の「固定値を増減」型トリガーを発動させる
  *      # 例: TriggerCall 1
  *      #   : トリガー発動 1
  *
  *   TriggerCall <triggerId> <deltaVariableId>
  *   トリガー発動 <triggerId> <deltaVariableId>
- *     # 変数<deltaVariableId>から値を読み取り、指定した<triggerId>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
+ *     # 変数<deltaVariableId>から値を読み取り、指定した<triggerId>の「最大値・最小値の範囲で増減」型トリガー、または「値を代入」型トリガーを発動させる
  *     # 例: TriggerCall 1 5
  *     #   : トリガー発動 1 5
  *
  *   TriggerCallByName <globalServerVariableName> <triggerName>
  *   名前でトリガー発動 <globalServerVariableName> <triggerName>
- *      # 指定した<globalServerVariableName> <triggerName>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
+ *      # 指定した<globalServerVariableName> <triggerName>の「固定値を増減」型トリガーを発動させる
  *      # 例: TriggerCallByName 変数1 トリガー名1
  *      #   : 名前でトリガー発動 変数1 トリガー名1
  *
  *   TriggerCallByName <globalServerVariableName> <triggerName> <valueVariableId>
  *   名前でトリガー発動 <globalServerVariableName> <triggerName> <valueVariableId>
- *     # 変数<valueVariableId>から値を読み取り、指定した<globalServerVariableName> <triggerName>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
+ *     # 変数<valueVariableId>から値を読み取り、指定した<globalServerVariableName> <triggerName>の「最大値・最小値の範囲で増減」型トリガー、または「値を代入」型トリガーを発動させる
  *     # 例: TriggerCallByName 変数1 トリガー名1 5
  *     #   : 名前でトリガー発動 変数1 トリガー名1 5
  *
