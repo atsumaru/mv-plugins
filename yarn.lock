@@ -4,7 +4,7 @@
 
 "@atsumaru/api-types@atsumaru/api-types#master":
   version "1.1.0"
-  resolved "https://codeload.github.com/atsumaru/api-types/tar.gz/b5869a3f7e20c31fb1cb71a3e89c20cc6d67d78e"
+  resolved "https://codeload.github.com/atsumaru/api-types/tar.gz/2ac5ddefdecd5e378d6df85cec273ce5eb135738"
 
 "@babel/runtime@^7.3.1":
   version "7.4.5"
