@@ -205,25 +205,25 @@
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
      *   TriggerCall <triggerId>
      *   トリガー発動 <triggerId>
-     *      # 指定した<triggerId>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
+     *      # 指定した<triggerId>の「固定値を増減」トリガーを発動させる
      *      # 例: TriggerCall 1
      *      #   : トリガー発動 1
      *
-     *   TriggerCall <triggerId> <deltaVariableId>
-     *   トリガー発動 <triggerId> <deltaVariableId>
-     *     # 変数<deltaVariableId>から値を読み取り、指定した<triggerId>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
+     *   TriggerCall <triggerId> <valueVariableId>
+     *   トリガー発動 <triggerId> <valueVariableId>
+     *     # 変数<valueVariableId>から値を読み取り、指定した<triggerId>の「最大値・最小値の範囲で増減」トリガー、または「値を代入」型トリガーを発動させる
      *     # 例: TriggerCall 1 5
      *     #   : トリガー発動 1 5
      *
      *   TriggerCallByName <globalServerVariableName> <triggerName>
      *   名前でトリガー発動 <globalServerVariableName> <triggerName>
-     *      # 指定した<globalServerVariableName> <triggerName>の「ゲーム内で固定値の増減を実行」型トリガーを発動させる
+     *      # 指定した<globalServerVariableName> <triggerName>の「固定値を増減」トリガーを発動させる
      *      # 例: TriggerCallByName 変数1 トリガー名1
      *      #   : 名前でトリガー発動 変数1 トリガー名1
      *
      *   TriggerCallByName <globalServerVariableName> <triggerName> <valueVariableId>
      *   名前でトリガー発動 <globalServerVariableName> <triggerName> <valueVariableId>
-     *     # 変数<valueVariableId>から値を読み取り、指定した<globalServerVariableName> <triggerName>の「ゲーム内で増減値を指定して実行」型トリガー、または「ゲーム内で設定値を指定して実行」型トリガーを発動させる
+     *     # 変数<valueVariableId>から値を読み取り、指定した<globalServerVariableName> <triggerName>の「最大値・最小値の範囲で増減」トリガー、または「値を代入」型トリガーを発動させる
      *     # 例: TriggerCallByName 変数1 トリガー名1 5
      *     #   : 名前でトリガー発動 変数1 トリガー名1 5
      *
@@ -269,16 +269,16 @@
         GetGlobalServerVariableByName: GetGlobalServerVariableByName,
         "名前でグローバルサーバ変数取得": GetGlobalServerVariableByName
     });
-    function TriggerCall(command, triggerIdStr, deltaVariableIdStr) {
+    function TriggerCall(command, triggerIdStr, valueVariableIdStr) {
         var triggerId = toNatural(triggerIdStr, command, "triggerId");
-        var deltaVariableId = toValidVariableIdOrUndefined(deltaVariableIdStr, command, "deltaVariableId");
+        var valueVariableId = toValidVariableIdOrUndefined(valueVariableIdStr, command, "valueVariableId");
         if (triggerCall) {
-            if (deltaVariableId === undefined) {
+            if (valueVariableId === undefined) {
                 this.bindPromiseForRPGAtsumaruPlugin(triggerCall(triggerId), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
             }
             else {
-                var delta = $gameVariables.value(deltaVariableId);
-                this.bindPromiseForRPGAtsumaruPlugin(triggerCall(triggerId, delta), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+                var value = $gameVariables.value(valueVariableId);
+                this.bindPromiseForRPGAtsumaruPlugin(triggerCall(triggerId, value), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
             }
         }
     }
