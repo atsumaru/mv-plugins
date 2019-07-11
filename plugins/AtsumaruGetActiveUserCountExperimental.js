@@ -1,5 +1,5 @@
 //=============================================================================
-// AtsumaruGetSelfInformationExperimental.js
+// AtsumaruGetActiveUserCountExperimental.js
 //
 // Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
@@ -9,22 +9,19 @@
 (function () {
     'use strict';
 
+    function isNumber(value) {
+        return value !== "" && !isNaN(value);
+    }
     function isInteger(value) {
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
     function isNatural(value) {
         return isInteger(value) && value > 0;
     }
-    function isValidVariableId(variableId) {
-        return isNatural(variableId) && variableId < $dataSystem.variables.length;
-    }
 
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
-    }
-    function hookStatic(baseClass, target, f) {
-        baseClass[target] = f(baseClass[target]);
     }
     // プラグインコマンドを追加する
     function addPluginCommand(commands) {
@@ -100,6 +97,24 @@
         }; });
     }
 
+    function toDefined(value, command, name) {
+        if (value === undefined) {
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定してください。");
+        }
+        else {
+            return value;
+        }
+    }
+    function toNatural(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isNatural(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
+        }
+    }
     function toTypedParameters(parameters, isArray) {
         if (isArray === void 0) { isArray = false; }
         var result = isArray ? [] : {};
@@ -116,60 +131,16 @@
         }
         return result;
     }
-    function ensureValidVariableIds(parameters) {
-        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
-            if (!origin.apply(this, arguments)) {
-                return false;
-            }
-            for (var key in parameters) {
-                var variableId = parameters[key];
-                if (variableId !== 0 && !isValidVariableId(variableId)) {
-                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
-                }
-            }
-            return true;
-        }; });
-    }
 
     /*:
-     * @plugindesc RPGアツマールのプレイヤー本人の情報を取得するAPIのための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのオンライン人数を取得するプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param id
+     * @param count
      * @type variable
-     * @text ユーザーID
-     * @desc 自己情報取得時に、ユーザーIDを代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param name
-     * @type variable
-     * @text ユーザー名
-     * @desc 自己情報取得時に、ユーザー名を代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param profile
-     * @type variable
-     * @text 自己紹介
-     * @desc 自己情報取得時に、自己紹介を代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param twitterId
-     * @type variable
-     * @text TwitterID
-     * @desc 自己情報取得時に、TwitterIDを代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param url
-     * @type variable
-     * @text ウェブサイト
-     * @desc 自己情報取得時に、ウェブサイトを代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param isPremium
-     * @type variable
-     * @text プレミアム会員か
-     * @desc 自己情報取得時に、プレミアム会員かどうかを代入する変数の番号を指定します。(1 = プレミアム会員, 0 = 一般会員)
-     * @default 0
+     * @text オンライン人数
+     * @desc オンライン人数を代入する変数の番号を指定します。
+     * @default 1
      *
      * @param errorMessage
      * @type variable
@@ -178,43 +149,30 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「自身のユーザー情報取得」を利用するためのプラグインです。
+     * このプラグインは、アツマールAPIの「オンライン人数を取得」を利用するためのプラグインです。
      * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
      *
-     * RPGアツマールで、プレイヤー本人のプロフィールなどの情報を取得します。
+     * RPGアツマールで、今から1～60分前までの間にこのゲームを遊んでいるログインユーザーの人数をプラグインコマンドで取得します。
      *
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
-     *   GetSelfInformation
-     *   プレイヤー取得
-     *      # プレイヤー本人の情報を取得します。
+     *   GetActiveUserCount <minutes>
+     *   オンライン人数取得 <minutes>
+     *      # 今から<minutes>分前までの間のオンライン人数を取得します。1～60までの整数を指定可能です。
      *      # 取得した情報は、プラグインパラメータで指定した変数IDに代入されます。
      *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
-     *
-     * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
-     *      GetSelfInformation（プレイヤー取得）
-     *          無視される（エラーメッセージにも何も代入されない）
-     *
-     * ※「並列処理」の中でプラグインコマンドを利用しますと
-     *   その時セーブしたセーブデータの状態が不確定になりますので、
-     *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetSelfInformationExperimental"));
-    var getSelfInformation = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getSelfInformation;
-    ensureValidVariableIds(parameters);
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCountExperimental"));
+    var getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getActiveUserCount;
     prepareBindPromise();
     addPluginCommand({
-        GetSelfInformation: GetSelfInformation,
-        "プレイヤー取得": GetSelfInformation
+        GetActiveUserCount: GetActiveUserCount,
+        "オンライン人数取得": GetActiveUserCount
     });
-    function GetSelfInformation() {
-        if (getSelfInformation) {
-            this.bindPromiseForRPGAtsumaruPlugin(getSelfInformation(), function (selfInformation) {
-                $gameVariables.setValue(parameters.id, selfInformation.id);
-                $gameVariables.setValue(parameters.name, selfInformation.name);
-                $gameVariables.setValue(parameters.profile, selfInformation.profile);
-                $gameVariables.setValue(parameters.twitterId, selfInformation.twitterId);
-                $gameVariables.setValue(parameters.url, selfInformation.url);
-                $gameVariables.setValue(parameters.isPremium, selfInformation.isPremium ? 1 : 0);
+    function GetActiveUserCount(command, minutesStr) {
+        var minutes = toNatural(minutesStr, command, "minutes");
+        if (getActiveUserCount) {
+            this.bindPromiseForRPGAtsumaruPlugin(getActiveUserCount(minutes), function (count) {
+                $gameVariables.setValue(parameters.count, count);
                 $gameVariables.setValue(parameters.errorMessage, 0);
             }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
