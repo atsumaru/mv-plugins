@@ -5,7 +5,7 @@ const glob = require("glob");
 const banner = (fileName) => `//=============================================================================
 // ${fileName}
 //
-// Copyright (c) 2018 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-${new Date().getFullYear()} RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
