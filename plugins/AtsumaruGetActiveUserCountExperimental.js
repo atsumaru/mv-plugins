@@ -18,10 +18,16 @@
     function isNatural(value) {
         return isInteger(value) && value > 0;
     }
+    function isValidVariableId(variableId) {
+        return isNatural(variableId) && variableId < $dataSystem.variables.length;
+    }
 
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
+    }
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
     }
     // プラグインコマンドを追加する
     function addPluginCommand(commands) {
@@ -131,6 +137,20 @@
         }
         return result;
     }
+    function ensureValidVariableIds(parameters) {
+        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
+            if (!origin.apply(this, arguments)) {
+                return false;
+            }
+            for (var key in parameters) {
+                var variableId = parameters[key];
+                if (variableId !== 0 && !isValidVariableId(variableId)) {
+                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                }
+            }
+            return true;
+        }; });
+    }
 
     /*:
      * @plugindesc RPGアツマールのオンライン人数を取得するプラグインです
@@ -163,6 +183,7 @@
      */
     var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCountExperimental"));
     var getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getActiveUserCount;
+    ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
         GetActiveUserCount: GetActiveUserCount,
