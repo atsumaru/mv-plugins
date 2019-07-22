@@ -28,7 +28,7 @@
  *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
  */
 
-import { toTypedParameters, toNatural } from "./utils/parameter";
+import { toTypedParameters, ensureValidVariableIds, toNatural } from "./utils/parameter";
 import { addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";
 
 interface Parameters {
@@ -40,6 +40,7 @@ declare const window: Window;
 const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCountExperimental")) as Parameters;
 const getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getActiveUserCount;
 
+ensureValidVariableIds(parameters);
 prepareBindPromise();
 
 addPluginCommand({
