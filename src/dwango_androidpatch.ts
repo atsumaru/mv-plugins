@@ -3,6 +3,10 @@
  * 1.1.0 2016.12.15
  * @plugindesc Android Chromeで音が鳴らない問題を解決するプラグイン
  * @author Dwango co., ltd.
+ *
+ * @help
+ * Android Chromeで音が鳴らない問題を解決するプラグインです。
+ * コアスクリプトでは https://github.com/rpgtkoolmv/corescript/pull/33 にて修正されています。
  */
 
 import { hookStatic } from "./utils/rmmvbridge";

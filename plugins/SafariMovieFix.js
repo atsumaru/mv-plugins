@@ -15,7 +15,9 @@
      * @plugindesc Safariで「サウンド付きメディアは再生しない」設定の場合に、動画を無音で再生するプラグイン
      * @author RPGアツマール開発チーム
      *
-     * @help プラグインを有効にするだけで動画再生の修正を行います。
+     * @help
+     * すべてのブラウザで自動再生起因による動画再生の失敗を修正するプラグインです。
+     * コアスクリプトでは https://github.com/rpgtkoolmv/corescript/pull/140 にて修正されています。
      */
     Graphics._onVideoLoad = function () {
         var _this = this;
