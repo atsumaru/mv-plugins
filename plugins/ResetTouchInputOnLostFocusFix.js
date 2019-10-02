@@ -17,6 +17,10 @@
     /*:
      * @plugindesc ゲームがフォーカスを失った時、タッチ入力をリセットするように修正します。
      * @author RPGアツマール開発チーム
+     *
+     * @help
+     * ゲームがフォーカスを失った時、タッチ入力をリセットするように修正します。
+     * コアスクリプトでは https://github.com/rpgtkoolmv/corescript/pull/184 にて取り込まれています。
      */
     hookStatic(TouchInput, "_setupEventHandlers", function (origin) { return function () {
         var _this = this;

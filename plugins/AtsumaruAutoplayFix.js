@@ -19,10 +19,8 @@
      * @author RPGアツマール開発チーム
      *
      * @help
-     * プラグインを有効にするだけで動画再生の修正を行います。
-     * コミュニティ版コアスクリプトにて対応される修正
-     * (https://github.com/rpgtkoolmv/corescript/pull/140)
-     * の先行実装になります。
+     * Safariで「サウンド付きメディアは再生しない」設定の場合に、動画を無音で再生するプラグインです。
+     * コアスクリプトでは https://github.com/rpgtkoolmv/corescript/pull/140 にて修正されています。
      */
     hookStatic(Graphics, "initialize", function (origin) { return function () {
         origin.apply(this, arguments);
