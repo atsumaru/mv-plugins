@@ -2,6 +2,12 @@
  * @plugindesc RPGアツマールのスクリーンショットAPI操作のための(Experimental版)プラグインです
  * @author RPGアツマール開発チーム
  *
+ * @param tweeted
+ * @type variable
+ * @text ツイートしたか
+ * @desc プラグインコマンドの後、ここで指定した変数にモーダルからツイートした場合は1が、していない場合は0が代入されます。
+ * @default 0
+ *
  * @param tweetText
  * @type variable
  * @text ツイート文章
@@ -85,6 +91,7 @@ import { hook, hookStatic, addPluginCommand, prepareBindPromise } from "./utils/
 import { TweetSettings } from "@atsumaru/api-types";
 
 interface Parameters {
+    tweeted: number;
     tweetText: number;
     param1: number;
     param2: number;
@@ -114,7 +121,7 @@ addPluginCommand({
 
 function DisplayScreenshotModal(this: Game_Interpreter) {
     if (displayModal) {
-        this.bindPromiseForRPGAtsumaruPlugin(displayModal());
+        this.bindPromiseForRPGAtsumaruPlugin(displayModal(), result => $gameVariables.setValue(parameters.tweeted, result.tweeted ? 1 : 0));
     }
 }
 
