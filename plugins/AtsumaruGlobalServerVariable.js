@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruGlobalServerVariableExperimental.js
+// AtsumaruGlobalServerVariable.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -165,7 +165,7 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールのグローバルサーバー変数のための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのグローバルサーバー変数のためのプラグインです
      * @author RPGアツマール開発チーム
      *
      * @param value
@@ -251,8 +251,8 @@
      *   その時セーブしたセーブデータの状態が不確定になりますので、
      *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariableExperimental"));
-    var globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.globalServerVariable;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariable"));
+    var globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.globalServerVariable;
     var triggerCall = globalServerVariable && globalServerVariable.triggerCall;
     var triggerCallByName = globalServerVariable && globalServerVariable.triggerCallByName;
     var getGlobalServerVariable = globalServerVariable && globalServerVariable.getGlobalServerVariable;

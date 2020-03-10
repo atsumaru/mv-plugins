@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruGetActiveUserCountExperimental.js
+// AtsumaruCreatorInformationModal.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -18,16 +18,10 @@
     function isNatural(value) {
         return isInteger(value) && value > 0;
     }
-    function isValidVariableId(variableId) {
-        return isNatural(variableId) && variableId < $dataSystem.variables.length;
-    }
 
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
-    }
-    function hookStatic(baseClass, target, f) {
-        baseClass[target] = f(baseClass[target]);
     }
     // プラグインコマンドを追加する
     function addPluginCommand(commands) {
@@ -103,99 +97,46 @@
         }; });
     }
 
-    function toDefined(value, command, name) {
+    function toNaturalOrUndefined(value, command, name) {
         if (value === undefined) {
-            throw new Error("「" + command + "」コマンドでは、" + name + "を指定してください。");
-        }
-        else {
             return value;
         }
-    }
-    function toNatural(value, command, name) {
-        value = toDefined(value, command, name);
         var number = +value;
         if (isNumber(value) && isNatural(number)) {
             return number;
         }
         else {
-            throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定する場合は自然数を指定してください。" + name + ": " + value);
         }
-    }
-    function toTypedParameters(parameters, isArray) {
-        if (isArray === void 0) { isArray = false; }
-        var result = isArray ? [] : {};
-        for (var key in parameters) {
-            try {
-                var value = JSON.parse(parameters[key]);
-                result[key] = value instanceof Array ? toTypedParameters(value, true)
-                    : value instanceof Object ? toTypedParameters(value)
-                        : value;
-            }
-            catch (error) {
-                result[key] = parameters[key];
-            }
-        }
-        return result;
-    }
-    function ensureValidVariableIds(parameters) {
-        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
-            if (!origin.apply(this, arguments)) {
-                return false;
-            }
-            for (var key in parameters) {
-                var variableId = parameters[key];
-                if (variableId !== 0 && !isValidVariableId(variableId)) {
-                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
-                }
-            }
-            return true;
-        }; });
     }
 
     /*:
-     * @plugindesc RPGアツマールのオンライン人数を取得するプラグインです
+     * @plugindesc RPGアツマールの作者情報ダイアログAPI操作のためのプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param count
-     * @type variable
-     * @text オンライン人数
-     * @desc オンライン人数を代入する変数の番号を指定します。
-     * @default 1
-     *
-     * @param errorMessage
-     * @type variable
-     * @text エラーメッセージ
-     * @desc エラーが発生した場合に、エラーメッセージを代入する変数の番号を指定します。
-     * @default 0
-     *
      * @help
-     * このプラグインは、アツマールAPIの「オンライン人数を取得」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
+     * このプラグインは、アツマールAPIの「作者情報ダイアログ」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/creator-modal)を参照してください。
      *
-     * RPGアツマールで、今から1～60分前までの間にこのゲームを遊んでいるログインユーザーの人数をプラグインコマンドで取得します。
-     *
-     * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
-     *   GetActiveUserCount <minutes>
-     *   オンライン人数取得 <minutes>
-     *      # 今から<minutes>分前までの間のオンライン人数を取得します。1～60までの整数を指定可能です。
-     *      # 取得した情報は、プラグインパラメータで指定した変数IDに代入されます。
-     *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
+     * プラグインコマンド:
+     *   DisplayCreatorInformationModal <niconicoUserId>        # 指定した<niconicoUserId>の作者情報ダイアログを表示します。省略した場合は現在のゲームの作者の作者情報ダイアログを表示します。
+     *   作者情報ダイアログ表示 <niconicoUserId>        # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCountExperimental"));
-    var getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getActiveUserCount;
-    ensureValidVariableIds(parameters);
+    var displayCreatorInformationModal = window.RPGAtsumaru && window.RPGAtsumaru.popups.displayCreatorInformationModal;
     prepareBindPromise();
     addPluginCommand({
-        GetActiveUserCount: GetActiveUserCount,
-        "オンライン人数取得": GetActiveUserCount
+        DisplayCreatorInformationModal: DisplayCreatorInformationModal,
+        "作者情報ダイアログ表示": DisplayCreatorInformationModal
     });
-    function GetActiveUserCount(command, minutesStr) {
-        var minutes = toNatural(minutesStr, command, "minutes");
-        if (getActiveUserCount) {
-            this.bindPromiseForRPGAtsumaruPlugin(getActiveUserCount(minutes), function (count) {
-                $gameVariables.setValue(parameters.count, count);
-                $gameVariables.setValue(parameters.errorMessage, 0);
-            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+    function DisplayCreatorInformationModal(command, niconicoUserIdStr) {
+        var niconicoUserId = toNaturalOrUndefined(niconicoUserIdStr, command, "niconicoUserId");
+        if (displayCreatorInformationModal) {
+            if (niconicoUserId === undefined) {
+                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal());
+            }
+            else {
+                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal(niconicoUserId));
+            }
         }
     }
 

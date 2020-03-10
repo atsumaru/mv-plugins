@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールのスクリーンショットAPI操作のための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールのスクリーンショットAPI操作のためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param tweeted
@@ -105,9 +105,9 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruScreenshotExperimental")) as Parameters;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruScreenshot")) as Parameters;
 const variableIds = Object.keys(parameters).map(key => parameters[key as keyof Parameters]);
-const screenshot = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.screenshot;
+const screenshot = window.RPGAtsumaru && window.RPGAtsumaru.screenshot;
 const displayModal = screenshot && screenshot.displayModal;
 const setTweetMessage = screenshot && screenshot.setTweetMessage;
 

@@ -80,7 +80,7 @@ import { addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";
 import { ScoreboardData } from "@atsumaru/api-types";
 
 declare const window: Window;
-const scoreboards = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.scoreboards;
+const scoreboards = window.RPGAtsumaru && window.RPGAtsumaru.scoreboards;
 const setRecord = scoreboards && scoreboards.setRecord;
 const display = scoreboards && scoreboards.display;
 const getRecords = scoreboards && scoreboards.getRecords;

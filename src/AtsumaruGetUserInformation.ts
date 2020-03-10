@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールの特定ユーザーの情報を取得するAPIのための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールの特定ユーザーの情報を取得するAPIのためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param name
@@ -66,8 +66,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetUserInformationExperimental")) as Parameters;
-const getUserInformation = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getUserInformation;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetUserInformation")) as Parameters;
+const getUserInformation = window.RPGAtsumaru && window.RPGAtsumaru.user.getUserInformation;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

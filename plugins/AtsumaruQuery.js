@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruQueryExperimental.js
+// AtsumaruQuery.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -56,7 +56,7 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールのquery情報を変数にコピーする(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのquery情報を変数にコピーするプラグインです
      * @author RPGアツマール開発チーム
      *
      * @help
@@ -67,7 +67,7 @@
      *   CopyQuery <id1> <id2>...         # param1をid1にコピー、param2をid2にコピー
      *   クエリ取得 <id1> <id2>...         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
      */
-    var query = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.query;
+    var query = window.RPGAtsumaru && window.RPGAtsumaru.query;
     addPluginCommand({
         CopyQuery: CopyQuery,
         "クエリ取得": CopyQuery

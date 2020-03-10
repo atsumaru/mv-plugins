@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruScreenshotExperimental.js
+// AtsumaruScreenshot.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -132,7 +132,7 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールのスクリーンショットAPI操作のための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのスクリーンショットAPI操作のためのプラグインです
      * @author RPGアツマール開発チーム
      *
      * @param tweeted
@@ -218,9 +218,9 @@
      *   詳しくはAPIリファレンス（このヘルプの最上部にアドレスがあります）をご参照ください。
      *
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruScreenshotExperimental"));
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruScreenshot"));
     var variableIds = Object.keys(parameters).map(function (key) { return parameters[key]; });
-    var screenshot = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.screenshot;
+    var screenshot = window.RPGAtsumaru && window.RPGAtsumaru.screenshot;
     var displayModal = screenshot && screenshot.displayModal;
     var setTweetMessage = screenshot && screenshot.setTweetMessage;
     ensureValidVariableIds(parameters);

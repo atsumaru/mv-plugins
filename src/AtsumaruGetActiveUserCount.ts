@@ -37,8 +37,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCountExperimental")) as Parameters;
-const getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getActiveUserCount;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCount")) as Parameters;
+const getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.user.getActiveUserCount;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

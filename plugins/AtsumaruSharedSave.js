@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruUserSignalExperimental.js
+// AtsumaruSharedSave.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -163,31 +163,19 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールのユーザーシグナルのための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールの共有セーブのためのプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param signalData
+     * @param startVariableId
      * @type variable
-     * @text シグナルデータ
-     * @desc ユーザーシグナルの取得時に、シグナルデータを代入する変数の番号を指定します。
+     * @text 共有セーブの保存範囲(開始)
+     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
      * @default 0
      *
-     * @param senderId
+     * @param finishVariableId
      * @type variable
-     * @text 送信者のユーザーID
-     * @desc ユーザーシグナルの取得時に、送信者のユーザーIDを代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param senderName
-     * @type variable
-     * @text 送信者のユーザー名
-     * @desc ユーザーシグナルの取得時に、送信者のユーザー名を代入する変数の番号を指定します。
-     * @default 0
-     *
-     * @param restCount
-     * @type variable
-     * @text 残シグナル数
-     * @desc ユーザーシグナルの取得時に、今取得したものを含めた残りのシグナル数を代入する変数の番号を指定します。
+     * @text 共有セーブの保存範囲(終了)
+     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
      * @default 0
      *
      * @param errorMessage
@@ -197,137 +185,79 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「ユーザーシグナル」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/signal)を参照してください。
+     * このプラグインは、アツマールAPIの「共有セーブ」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/shared-save)を参照してください。
      *
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
-     *   SendUserSignal <signalDataVariableId> <userIdVariableId>
-     *   ユーザーシグナル送信 <signalDataVariableId> <userIdVariableId>
-     *     # 変数<signalDataVariableId>からシグナルデータを読み取り、
-     *          それを変数<userIdVariableId>から読み取ったユーザーIDの相手に送信します。
-     *     # 例: SendUserSignal 1 2
-     *     #   : ユーザーシグナル送信 1 2
+     *   SetSharedSave
+     *   共有セーブ保存
+     *      # 共有セーブの保存範囲(開始-終了)で指定した範囲の変数を読み込み、
+     *          自分の共有セーブとして保存します。
+     *      # 例: SetSharedSave
+     *      #   : 共有セーブ保存
      *
-     *   GetUserSignal
-     *   ユーザーシグナル取得
-     *      # まだ取得したことがないユーザーシグナルの中で最も古い一件を読み込み、
-     *          プラグインパラメータで指定した変数に値をセットします。
-     *      # 残シグナル数が0だった時は、シグナルデータと送信者のユーザーID/名前には0がセットされます。
-     *      # 残シグナル数が0か1だった時は、次の取得コマンドで新たなシグナルの受信を試みますので
-     *          時間がかかることがあります。スムーズに実行したい場合は、
-     *          次の取得コマンドの実行（受信）までに１０秒以上の時間を空けてください。
-     *      # 例: GetUserSignal
-     *      #   : ユーザーシグナル取得
+     *   GetSharedSave <userIdVariableId> <startVariableId>
+     *   共有セーブ取得 <userIdVariableId> <startVariableId>
+     *      # 変数<userIdVariableId>からユーザーIDを読み取り、
+     *          そのユーザーの共有セーブを<startVariableId>を先頭にして代入します。
+     *      # 例: GetSharedSave 1 201
+     *      #   : 共有セーブ取得 1 201
+     *          （共有セーブの保存範囲が101-150で計50個の場合、変数1番に格納されたユーザーIDの人の共有セーブを201-250に代入）
      *
      * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
-     *      SendUserSignal（ユーザーシグナル送信）
+     *      SetSharedSave（共有セーブ保存）
      *          無視される（エラーメッセージにも何も代入されない）
-     *      GetUserSignal（ユーザーシグナル取得）
+     *      GetSharedSave（共有セーブ取得）
      *          無視される（エラーメッセージにも何も代入されない）
+     *
+     * 備考:
+     * ・本プラグインは、共有セーブの保存領域をすべて使用します。
+     *      そのため、共有セーブを活用する他のプラグインと共存することはできません。
+     * ・ゲームを公開後に共有セーブの保存範囲を変更する時は、
+     *      古い保存範囲のセーブデータとの互換性にご注意ください。
      *
      * ※「並列処理」の中でプラグインコマンドを利用しますと
      *   その時セーブしたセーブデータの状態が不確定になりますので、
      *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruUserSignalExperimental"));
-    var signal = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.signal;
-    var sendUserSignal = signal && signal.sendSignalToUser;
-    var getUserSignals = signal && signal.getUserSignals;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruSharedSave"));
+    var setItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.setItems;
+    var getSharedItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.getSharedItems;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        SendUserSignal: SendUserSignal,
-        "ユーザーシグナル送信": SendUserSignal,
-        GetUserSignal: GetUserSignal,
-        "ユーザーシグナル取得": GetUserSignal
+        SetSharedSave: SetSharedSave,
+        "共有セーブ保存": SetSharedSave,
+        GetSharedSave: GetSharedSave,
+        "共有セーブ取得": GetSharedSave
     });
-    hookStatic(DataManager, "createGameObjects", function (origin) { return function () {
-        origin.apply(this, arguments);
-        initialFetch();
-    }; });
-    hookStatic(DataManager, "extractSaveContents", function (origin) { return function () {
-        origin.apply(this, arguments);
-        initialFetch();
-    }; });
-    function initialFetch() {
-        if (!$gameSystem._userSignalStoreForRPGAtsumaruPlugin && getUserSignals) {
-            $gameSystem._userSignalStoreForRPGAtsumaruPlugin = { signals: [], lastPoppedSignals: [] };
-            fetchUserSignal(getUserSignals, $gameSystem._userSignalStoreForRPGAtsumaruPlugin);
+    function SetSharedSave() {
+        var variables = [];
+        for (var i = parameters.startVariableId; i <= parameters.finishVariableId; i++) {
+            variables.push($gameVariables.value(i));
+        }
+        var value = JSON.stringify(variables);
+        if (setItems) {
+            this.bindPromiseForRPGAtsumaruPlugin(setItems([{ key: "Atsumaru Shared", value: value }]), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
     }
-    function fetchUserSignal(getUserSignals, store) {
-        return getUserSignals().then(function (userSignals) {
-            userSignals.sort(function (a, b) { return b.createdAt - a.createdAt; });
-            if (store.lastPoppedSignals.length > 0) {
-                var lastIndex = userSignals.map(function (signal) { return signal.createdAt; })
-                    .lastIndexOf(store.lastPoppedSignals[0].createdAt);
-                if (lastIndex !== -1) {
-                    userSignals = userSignals.slice(0, lastIndex + 1);
-                    difference(userSignals, store.lastPoppedSignals);
-                }
-            }
-            store.signals = userSignals;
-        });
-    }
-    function difference(signals, excludes) {
-        var excludeIds = excludes.map(function (signal) { return signal.id; });
-        var excludeCreatedAt = excludes[0].createdAt;
-        for (var index = signals.length - 1; index >= 0 && signals[index].createdAt === excludeCreatedAt; index--) {
-            if (excludeIds.indexOf(signals[index].id) !== -1) {
-                signals.splice(index, 1);
-            }
-        }
-    }
-    function SendUserSignal(command, signalDataVariableIdStr, userIdVariableIdStr) {
-        var signalDataVariableId = toValidVariableId(signalDataVariableIdStr, command, "signalDataVariableId");
-        var signalData = String($gameVariables.value(signalDataVariableId));
+    function GetSharedSave(command, userIdVariableIdStr, startVariableIdStr) {
         var userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
         var userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
-        if (sendUserSignal) {
-            this.bindPromiseForRPGAtsumaruPlugin(sendUserSignal(userId, signalData), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
-        }
-    }
-    function GetUserSignal() {
-        if (getUserSignals) {
-            var store_1 = $gameSystem._userSignalStoreForRPGAtsumaruPlugin;
-            if (store_1.signals.length === 0) {
-                this.bindPromiseForRPGAtsumaruPlugin(throttlePromise(function () { return fetchUserSignal(getUserSignals, store_1); }), function () { return setUserSignal(store_1); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
-            }
-            else {
-                setUserSignal(store_1);
-            }
-        }
-    }
-    var lastApiCallTime = 0;
-    var apiCallInterval = 10000;
-    // Promiseの間隔が１０秒に１回を切るようなら間隔が開くようにPromiseの開始を遅延する
-    function throttlePromise(promise) {
-        return new Promise(function (resolve) {
-            var delta = lastApiCallTime + apiCallInterval - Date.now();
-            if (delta > 0) {
-                setTimeout(function () { return resolve(throttlePromise(promise)); }, delta);
-            }
-            else {
-                lastApiCallTime = Date.now();
-                resolve(promise());
-            }
-        });
-    }
-    function setUserSignal(store) {
-        $gameVariables.setValue(parameters.signalData, 0);
-        $gameVariables.setValue(parameters.senderId, 0);
-        $gameVariables.setValue(parameters.senderName, 0);
-        $gameVariables.setValue(parameters.restCount, store.signals.length);
-        $gameVariables.setValue(parameters.errorMessage, 0);
-        var signal = store.signals.pop();
-        if (signal) {
-            $gameVariables.setValue(parameters.signalData, isNumber(signal.data) ? +signal.data : signal.data);
-            $gameVariables.setValue(parameters.senderId, signal.senderId);
-            $gameVariables.setValue(parameters.senderName, signal.senderName);
-            if (store.lastPoppedSignals.length > 0 && store.lastPoppedSignals[0].createdAt !== signal.createdAt) {
-                store.lastPoppedSignals = [];
-            }
-            store.lastPoppedSignals.push(signal);
+        var startVariableId = toValidVariableId(startVariableIdStr, command, "startVariableId");
+        if (getSharedItems) {
+            this.bindPromiseForRPGAtsumaruPlugin(getSharedItems([userId]), function (sharedSaves) {
+                if (sharedSaves[userId]) {
+                    var variables = JSON.parse(sharedSaves[userId]);
+                    for (var i = 0; i < variables.length; i++) {
+                        $gameVariables.setValue(i + startVariableId, variables[i]);
+                    }
+                    $gameVariables.setValue(parameters.errorMessage, 0);
+                }
+                else {
+                    $gameVariables.setValue(parameters.errorMessage, "指定したユーザーの共有セーブは見つかりませんでした");
+                }
+            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
     }
 

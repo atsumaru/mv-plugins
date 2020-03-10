@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruGetRecentUsersExperimental.js
+// AtsumaruInterplayerEnable.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -132,14 +132,8 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールの最新ユーザーを取得するプラグインです
+     * @plugindesc RPGアツマールのプレイヤー間通信を有効化するプラグインです
      * @author RPGアツマール開発チーム
-     *
-     * @param offset
-     * @type variable
-     * @text 最新ユーザー(先頭)
-     * @desc 最新ユーザーの先頭を代入する変数の番号を指定します。例:201を指定すると変数201番～300番にIDが、301番～400番に名前が代入されます
-     * @default 1
      *
      * @param errorMessage
      * @type variable
@@ -148,50 +142,38 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「最新ユーザー取得」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
+     * このプラグインは、アツマールAPIの「プレイヤー間通信」を有効化するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/common/interplayer)を参照してください。
      *
-     * RPGアツマールで、最近このゲームを遊んだプレイヤーをプラグインコマンドで取得します。
-     * ・このゲームにおいてプレイヤー間通信を有効化しているプレイヤーのIDと名前を、
-     * ・このゲームを最後に（最近）遊んだ順に、
-     * ・最大１００人まで
-     * 取得することができます。
+     * RPGアツマールのプレイヤー間通信をプラグインコマンドで有効化します。
+     * 有効化したプレイヤーは、このゲーム内において以下のような機能が有効になります。
+     * ・共有セーブやユーザー情報を他人が読み取れるようになる
+     * ・他人から送信されたユーザーシグナルを受信できるようになる
+     * ・「このゲームをプレイヤーした最新ユーザーリスト」に登録されるようになる
      *
      * プラグインコマンド:
-     *   GetRecentUsers          # 最新ユーザーを取得します
-     *   最新ユーザー取得         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
-     *
-     * ユーザーを取得すると、変数1番～100番に新しい順にユーザーIDが代入され、
-     * 変数101番～200番にIDに対応するユーザー名が代入されます。
-     * ユーザーが100人に満たなかった場合、残りの変数には0が代入されます。
-     * （プラグインパラメータ「最新ユーザー(先頭)」を変更することで、代入先をずらすこともできます）
+     *   EnableInterplayer          # プレイヤー間通信を有効化します
+     *   プレイヤー間通信有効化         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
      *
      * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
-     *   GetRecentUsers（最新ユーザー取得）
+     *   EnableInterplayer（プレイヤー間通信有効化）
      *     無視される（エラーメッセージにも何も代入されない）
      *
      * ※「並列処理」の中でプラグインコマンドを利用しますと
      *   その時セーブしたセーブデータの状態が不確定になりますので、
      *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetRecentUsersExperimental"));
-    var getRecentUsers = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getRecentUsers;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruEnableInterplayer"));
+    var enableInterplayer = window.RPGAtsumaru && window.RPGAtsumaru.interplayer.enable;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        GetRecentUsers: GetRecentUsers,
-        "最新ユーザー取得": GetRecentUsers
+        EnableInterplayer: EnableInterplayer,
+        "プレイヤー間通信有効化": EnableInterplayer
     });
-    function GetRecentUsers() {
-        if (getRecentUsers) {
-            this.bindPromiseForRPGAtsumaruPlugin(getRecentUsers(), function (recentUsers) {
-                for (var i = 0; i < 100; i++) {
-                    var user = recentUsers[i];
-                    $gameVariables.setValue(parameters.offset + i, user ? user.id : 0);
-                    $gameVariables.setValue(parameters.offset + i + 100, user ? user.name : 0);
-                }
-                $gameVariables.setValue(parameters.errorMessage, 0);
-            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+    function EnableInterplayer() {
+        if (enableInterplayer) {
+            this.bindPromiseForRPGAtsumaruPlugin(enableInterplayer(), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
     }
 

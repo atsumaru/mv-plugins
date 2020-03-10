@@ -39,8 +39,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruNiconicoukokuExperimental")) as Parameters;
-const getPoints = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.nicoad && window.RPGAtsumaru.experimental.nicoad.getPoints;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruNiconicoukoku")) as Parameters;
+const getPoints = window.RPGAtsumaru && window.RPGAtsumaru.nicoad.getPoints;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

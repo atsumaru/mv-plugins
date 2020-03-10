@@ -39,8 +39,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruEnableInterplayerExperimental")) as Parameters;
-const enableInterplayer = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.interplayer && window.RPGAtsumaru.experimental.interplayer.enable;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruEnableInterplayer")) as Parameters;
+const enableInterplayer = window.RPGAtsumaru && window.RPGAtsumaru.interplayer.enable;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

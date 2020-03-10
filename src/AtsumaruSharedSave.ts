@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールの共有セーブのための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールの共有セーブのためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param startVariableId
@@ -67,9 +67,9 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruSharedSaveExperimental")) as Parameters;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruSharedSave")) as Parameters;
 const setItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.setItems;
-const getSharedItems = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.storage && window.RPGAtsumaru.experimental.storage.getSharedItems;
+const getSharedItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.getSharedItems;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

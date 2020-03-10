@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruScoreboardsExperimental.js
+// AtsumaruScoreboards.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -228,7 +228,7 @@
      *   その時セーブしたセーブデータの状態が不確定になりますので、
      *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var scoreboards = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.scoreboards;
+    var scoreboards = window.RPGAtsumaru && window.RPGAtsumaru.scoreboards;
     var setRecord = scoreboards && scoreboards.setRecord;
     var display = scoreboards && scoreboards.display;
     var getRecords = scoreboards && scoreboards.getRecords;
