@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールのquery情報を変数にコピーする(Experimental版)プラグインです
+ * @plugindesc RPGアツマールのquery情報を変数にコピーするプラグインです
  * @author RPGアツマール開発チーム
  *
  * @help
@@ -16,7 +16,7 @@ import { toValidVariableId } from "./utils/parameter";
 import { addPluginCommand } from "./utils/rmmvbridge";
 
 declare const window: Window;
-const query = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.query;
+const query = window.RPGAtsumaru && window.RPGAtsumaru.query;
 
 addPluginCommand({
     CopyQuery,

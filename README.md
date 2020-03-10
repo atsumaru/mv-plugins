@@ -5,53 +5,53 @@ RPGアツマール公式による、RPGツクールMVプラグインです。
 
 ## アツマールAPIを利用するためのプラグイン
 
-### AtsumaruCreatorInformationModalExperimental.js
+### AtsumaruCreatorInformationModal.js
 
 アツマールAPIの「作者情報ダイアログ」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/creator-modal)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruCreatorInformationModalExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruCreatorInformationModalExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruCreatorInformationModal.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruCreatorInformationModal.ts)
 
-### AtsumaruGetRecentUsersExperimental.js
+### AtsumaruGetRecentUsers.js
 
 アツマールAPIの「最新ユーザー取得」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/user)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetRecentUsersExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetRecentUsersExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetRecentUsers.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetRecentUsers.ts)
 
-### AtsumaruGetSelfInformationExperimental.js
+### AtsumaruGetSelfInformation.js
 
 アツマールAPIの「自身のユーザー情報取得」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/user)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetSelfInformationExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetSelfInformationExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetSelfInformation.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetSelfInformation.ts)
 
-### AtsumaruGetUserInformationExperimental.js
+### AtsumaruGetUserInformation.js
 
 アツマールAPIの「ユーザー情報取得」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/user)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetUserInformationExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetUserInformationExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGetUserInformation.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGetUserInformation.ts)
 
-### AtsumaruGlobalServerVariableExperimental.js
+### AtsumaruGlobalServerVariable.js
 
 アツマールAPIの「グローバルサーバー変数」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/global-server-variable)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGlobalServerVariableExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGlobalServerVariableExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruGlobalServerVariable.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruGlobalServerVariable.ts)
 
-### AtsumaruInterplayerEnableExperimental.js
+### AtsumaruInterplayerEnable.js
 
 アツマールAPIの「プレイヤー間通信」を有効化するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/common/interplayer)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruInterplayerEnableExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruInterplayerEnableExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruInterplayerEnable.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruInterplayerEnable.ts)
 
 ### AtsumaruOpenLink.js
 
@@ -61,37 +61,37 @@ RPGアツマール公式による、RPGツクールMVプラグインです。
 - [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruOpenLink.js)
 - [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruOpenLink.ts)
 
-### AtsumaruQueryExperimental.js
+### AtsumaruQuery.js
 
 アツマールAPIの「クエリ取得」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/copy-query)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruQueryExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruQueryExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruQuery.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruQuery.ts)
 
-### AtsumaruScoreboardsExperimental.js
+### AtsumaruScoreboards.js
 
 アツマールAPIの「スコアボード」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/scoreboard)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruScoreboardsExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruScoreboardsExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruScoreboards.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruScoreboards.ts)
 
-### AtsumaruScreenshotExperimental.js
+### AtsumaruScreenshot.js
 
 アツマールAPIの「スクリーンショット撮影」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/screenshot)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruScreenshotExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruScreenshotExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruScreenshot.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruScreenshot.ts)
 
-### AtsumaruSharedSaveExperimental.js
+### AtsumaruSharedSave.js
 
 アツマールAPIの「共有セーブ」を利用するためのプラグインです。
 詳しくは[アツマールAPIリファレンス](https://atsumaru.github.io/api-references/shared-save)を参照してください。
 
-- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruSharedSaveExperimental.js)
-- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruSharedSaveExperimental.ts)
+- [プラグイン](https://raw.githubusercontent.com/atsumaru/mv-plugins/master/plugins/AtsumaruSharedSave.js)
+- [ソースコード](https://github.com/atsumaru/mv-plugins/blob/master/src/AtsumaruSharedSave.ts)
 
 ### DetectAtsumaru.js
 
@@ -177,3 +177,9 @@ lintは以下のコマンドで実行できます。
 ```sh
 yarn lint
 ```
+
+### このリポジトリと@atsumaru/api-typesを一緒に開発し、かつそれをWSL(bash on windows) で開発したい人向けの注意書き
+
+@atsumaru/api-types をyarn link して開発すると一緒に開発できる
+この時にyarnコマンドをWSLから使用してはいけない(windows側にあるvscode当のエディタから見て正しくリンクされない)
+ちゃんとmingwやpower shellを使いましょう

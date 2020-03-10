@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールのプレイヤー本人の情報を取得するAPIのための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールのプレイヤー本人の情報を取得するAPIのためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param id
@@ -80,8 +80,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetSelfInformationExperimental")) as Parameters;
-const getSelfInformation = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getSelfInformation;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetSelfInformation")) as Parameters;
+const getSelfInformation = window.RPGAtsumaru && window.RPGAtsumaru.user.getSelfInformation;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();

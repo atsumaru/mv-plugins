@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruCreatorInformationModalExperimental.js
+// AtsumaruNiconicoukoku.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -9,19 +9,22 @@
 (function () {
     'use strict';
 
-    function isNumber(value) {
-        return value !== "" && !isNaN(value);
-    }
     function isInteger(value) {
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
     function isNatural(value) {
         return isInteger(value) && value > 0;
     }
+    function isValidVariableId(variableId) {
+        return isNatural(variableId) && variableId < $dataSystem.variables.length;
+    }
 
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
+    }
+    function hookStatic(baseClass, target, f) {
+        baseClass[target] = f(baseClass[target]);
     }
     // プラグインコマンドを追加する
     function addPluginCommand(commands) {
@@ -97,46 +100,83 @@
         }; });
     }
 
-    function toNaturalOrUndefined(value, command, name) {
-        if (value === undefined) {
-            return value;
+    function toTypedParameters(parameters, isArray) {
+        if (isArray === void 0) { isArray = false; }
+        var result = isArray ? [] : {};
+        for (var key in parameters) {
+            try {
+                var value = JSON.parse(parameters[key]);
+                result[key] = value instanceof Array ? toTypedParameters(value, true)
+                    : value instanceof Object ? toTypedParameters(value)
+                        : value;
+            }
+            catch (error) {
+                result[key] = parameters[key];
+            }
         }
-        var number = +value;
-        if (isNumber(value) && isNatural(number)) {
-            return number;
-        }
-        else {
-            throw new Error("「" + command + "」コマンドでは、" + name + "を指定する場合は自然数を指定してください。" + name + ": " + value);
-        }
+        return result;
+    }
+    function ensureValidVariableIds(parameters) {
+        hookStatic(DataManager, "isDatabaseLoaded", function (origin) { return function () {
+            if (!origin.apply(this, arguments)) {
+                return false;
+            }
+            for (var key in parameters) {
+                var variableId = parameters[key];
+                if (variableId !== 0 && !isValidVariableId(variableId)) {
+                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                }
+            }
+            return true;
+        }; });
     }
 
     /*:
-     * @plugindesc RPGアツマールの作者情報ダイアログAPI操作のための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールでニコニ広告ポイントを取得するプラグインです
      * @author RPGアツマール開発チーム
      *
+     * @param activePoint
+     * @type variable
+     * @text アクティブポイント
+     * @desc 広告期間以内の広告ポイントを代入する変数の番号を指定します。
+     * @default 0
+     *
+     * @param totalPoint
+     * @type variable
+     * @text トータルポイント
+     * @desc 累計の広告ポイントを代入する変数の番号を指定します。
+     * @default 0
+     *
+     * @param errorMessage
+     * @type variable
+     * @text エラーメッセージ
+     * @desc エラーが発生した場合に、エラーメッセージを代入する変数の番号を指定します。
+     * @default 0
+     *
      * @help
-     * このプラグインは、アツマールAPIの「作者情報ダイアログ」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/creator-modal)を参照してください。
+     * このプラグインは、アツマールAPIの「ニコニ広告ポイント取得」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/nicoad)を参照してください。
      *
      * プラグインコマンド:
-     *   DisplayCreatorInformationModal <niconicoUserId>        # 指定した<niconicoUserId>の作者情報ダイアログを表示します。省略した場合は現在のゲームの作者の作者情報ダイアログを表示します。
-     *   作者情報ダイアログ表示 <niconicoUserId>        # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
+     *   GetNicoadPoints         # ニコニ広告ポイント（アクティブポイントとトータルポイント）を取得する
+     *   ニコニ広告ポイント取得         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
      */
-    var displayCreatorInformationModal = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.popups && window.RPGAtsumaru.experimental.popups.displayCreatorInformationModal;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruNiconicoukoku"));
+    var getPoints = window.RPGAtsumaru && window.RPGAtsumaru.nicoad.getPoints;
+    ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        DisplayCreatorInformationModal: DisplayCreatorInformationModal,
-        "作者情報ダイアログ表示": DisplayCreatorInformationModal
+        GetNicoadPoints: GetNicoadPoints,
+        ニコニ広告ポイント取得: GetNicoadPoints
     });
-    function DisplayCreatorInformationModal(command, niconicoUserIdStr) {
-        var niconicoUserId = toNaturalOrUndefined(niconicoUserIdStr, command, "niconicoUserId");
-        if (displayCreatorInformationModal) {
-            if (niconicoUserId === undefined) {
-                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal());
-            }
-            else {
-                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal(niconicoUserId));
-            }
+    function GetNicoadPoints() {
+        if (getPoints) {
+            this.bindPromiseForRPGAtsumaruPlugin(getPoints(), function (_a) {
+                var activePoint = _a.activePoint, totalPoint = _a.totalPoint;
+                $gameVariables.setValue(parameters.activePoint, activePoint);
+                $gameVariables.setValue(parameters.totalPoint, totalPoint);
+                $gameVariables.setValue(parameters.errorMessage, 0);
+            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
     }
 

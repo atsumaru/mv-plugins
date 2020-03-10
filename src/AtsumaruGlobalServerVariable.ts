@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールのグローバルサーバー変数のための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールのグローバルサーバー変数のためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param value
@@ -98,8 +98,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariableExperimental")) as Parameters;
-const globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.globalServerVariable;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalServerVariable")) as Parameters;
+const globalServerVariable = window.RPGAtsumaru && window.RPGAtsumaru.globalServerVariable;
 const triggerCall = globalServerVariable && globalServerVariable.triggerCall;
 const triggerCallByName = globalServerVariable && globalServerVariable.triggerCallByName;
 const getGlobalServerVariable = globalServerVariable && globalServerVariable.getGlobalServerVariable;

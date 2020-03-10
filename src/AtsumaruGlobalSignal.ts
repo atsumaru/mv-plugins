@@ -1,29 +1,29 @@
 /*:
- * @plugindesc RPGアツマールのユーザーシグナルのための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールのグローバルシグナルのためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @param signalData
  * @type variable
  * @text シグナルデータ
- * @desc ユーザーシグナルの取得時に、シグナルデータを代入する変数の番号を指定します。
+ * @desc グローバルシグナルの取得時に、シグナルデータを代入する変数の番号を指定します。
  * @default 0
  *
  * @param senderId
  * @type variable
  * @text 送信者のユーザーID
- * @desc ユーザーシグナルの取得時に、送信者のユーザーIDを代入する変数の番号を指定します。
+ * @desc グローバルシグナルの取得時に、送信者のユーザーIDを代入する変数の番号を指定します。
  * @default 0
  *
  * @param senderName
  * @type variable
  * @text 送信者のユーザー名
- * @desc ユーザーシグナルの取得時に、送信者のユーザー名を代入する変数の番号を指定します。
+ * @desc グローバルシグナルの取得時に、送信者のユーザー名を代入する変数の番号を指定します。
  * @default 0
  *
  * @param restCount
  * @type variable
  * @text 残シグナル数
- * @desc ユーザーシグナルの取得時に、今取得したものを含めた残りのシグナル数を代入する変数の番号を指定します。
+ * @desc グローバルシグナルの取得時に、今取得したものを含めた残りのシグナル数を代入する変数の番号を指定します。
  * @default 0
  *
  * @param errorMessage
@@ -33,32 +33,32 @@
  * @default 0
  *
  * @help
- * このプラグインは、アツマールAPIの「ユーザーシグナル」を利用するためのプラグインです。
+ * このプラグインは、アツマールAPIの「グローバルシグナル」を利用するためのプラグインです。
  * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/signal)を参照してください。
  *
  * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
- *   SendUserSignal <signalDataVariableId> <userIdVariableId>
- *   ユーザーシグナル送信 <signalDataVariableId> <userIdVariableId>
+ *   SendGlobalSignal <signalDataVariableId>
+ *   グローバルシグナル送信 <signalDataVariableId>
  *     # 変数<signalDataVariableId>からシグナルデータを読み取り、
- *          それを変数<userIdVariableId>から読み取ったユーザーIDの相手に送信します。
- *     # 例: SendUserSignal 1 2
- *     #   : ユーザーシグナル送信 1 2
+ *          それをグローバルシグナルとして送信します。
+ *     # 例: SendGlobalSignal 1
+ *     #   : グローバルシグナル送信 1
  *
- *   GetUserSignal
- *   ユーザーシグナル取得
- *      # まだ取得したことがないユーザーシグナルの中で最も古い一件を読み込み、
+ *   GetGlobalSignal
+ *   グローバルシグナル取得
+ *      # まだ取得したことがないグローバルシグナルの中で最も古い一件を読み込み、
  *          プラグインパラメータで指定した変数に値をセットします。
  *      # 残シグナル数が0だった時は、シグナルデータと送信者のユーザーID/名前には0がセットされます。
  *      # 残シグナル数が0か1だった時は、次の取得コマンドで新たなシグナルの受信を試みますので
  *          時間がかかることがあります。スムーズに実行したい場合は、
  *          次の取得コマンドの実行（受信）までに１０秒以上の時間を空けてください。
- *      # 例: GetUserSignal
- *      #   : ユーザーシグナル取得
+ *      # 例: GetGlobalSignal
+ *      #   : グローバルシグナル取得
  *
  * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
- *      SendUserSignal（ユーザーシグナル送信）
+ *      SendGlobalSignal（グローバルシグナル送信）
  *          無視される（エラーメッセージにも何も代入されない）
- *      GetUserSignal（ユーザーシグナル取得）
+ *      GetGlobalSignal（グローバルシグナル取得）
  *          無視される（エラーメッセージにも何も代入されない）
  *
  * ※「並列処理」の中でプラグインコマンドを利用しますと
@@ -67,9 +67,9 @@
  */
 
 import { isNumber } from "./utils/typecheck";
-import { toNatural, toValidVariableId, toTypedParameters, ensureValidVariableIds } from "./utils/parameter";
+import { toValidVariableId, toTypedParameters, ensureValidVariableIds } from "./utils/parameter";
 import { hookStatic, addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";
-import { UserSignal } from "@atsumaru/api-types";
+import { GlobalSignal } from "@atsumaru/api-types";
 
 interface Parameters {
     signalData: number
@@ -79,25 +79,25 @@ interface Parameters {
     errorMessage: number
 }
 
-interface UserSignalStore {
-    signals: UserSignal[]
-    lastPoppedSignals: UserSignal[]
+interface GlobalSignalStore {
+    signals: GlobalSignal[]
+    lastPoppedSignals: GlobalSignal[]
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruUserSignalExperimental")) as Parameters;
-const signal = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.signal;
-const sendUserSignal = signal && signal.sendSignalToUser;
-const getUserSignals = signal && signal.getUserSignals;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGlobalSignal")) as Parameters;
+const signal = window.RPGAtsumaru && window.RPGAtsumaru.signal;
+const sendGlobalSignal = signal && signal.sendSignalToGlobal;
+const getGlobalSignals = signal && signal.getGlobalSignals;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();
 
 addPluginCommand({
-    SendUserSignal,
-    "ユーザーシグナル送信": SendUserSignal,
-    GetUserSignal,
-    "ユーザーシグナル取得": GetUserSignal
+    SendGlobalSignal,
+    "グローバルシグナル送信": SendGlobalSignal,
+    GetGlobalSignal,
+    "グローバルシグナル取得": GetGlobalSignal
 });
 
 hookStatic(DataManager, "createGameObjects", origin => function(this: typeof DataManager) {
@@ -111,30 +111,30 @@ hookStatic(DataManager, "extractSaveContents", origin => function(this: typeof D
 });
 
 function initialFetch() {
-    if (!$gameSystem._userSignalStoreForRPGAtsumaruPlugin && getUserSignals) {
-        $gameSystem._userSignalStoreForRPGAtsumaruPlugin = { signals: [], lastPoppedSignals: [] };
-        fetchUserSignal(getUserSignals, $gameSystem._userSignalStoreForRPGAtsumaruPlugin);
+    if (!$gameSystem._globalSignalStoreForRPGAtsumaruPlugin && getGlobalSignals) {
+        $gameSystem._globalSignalStoreForRPGAtsumaruPlugin = { signals: [], lastPoppedSignals: [] };
+        fetchGlobalSignal(getGlobalSignals, $gameSystem._globalSignalStoreForRPGAtsumaruPlugin);
     }
 }
 
-function fetchUserSignal(getUserSignals: () => Promise<UserSignal[]>, store: UserSignalStore) {
-    return getUserSignals().then(
-        userSignals => {
-            userSignals.sort((a, b) => b.createdAt - a.createdAt);
+function fetchGlobalSignal(getGlobalSignals: () => Promise<GlobalSignal[]>, store: GlobalSignalStore) {
+    return getGlobalSignals().then(
+        globalSignals => {
+            globalSignals.sort((a, b) => b.createdAt - a.createdAt);
             if (store.lastPoppedSignals.length > 0) {
-                const lastIndex = userSignals.map(signal => signal.createdAt)
+                const lastIndex = globalSignals.map(signal => signal.createdAt)
                     .lastIndexOf(store.lastPoppedSignals[0].createdAt);
                 if (lastIndex !== -1) {
-                    userSignals = userSignals.slice(0, lastIndex + 1);
-                    difference(userSignals, store.lastPoppedSignals);
+                    globalSignals = globalSignals.slice(0, lastIndex + 1);
+                    difference(globalSignals, store.lastPoppedSignals);
                 }
             }
-            store.signals = userSignals;
+            store.signals = globalSignals;
         }
     );
 }
 
-function difference(signals: UserSignal[], excludes: UserSignal[]) {
+function difference(signals: GlobalSignal[], excludes: GlobalSignal[]) {
     const excludeIds = excludes.map(signal => signal.id);
     const excludeCreatedAt = excludes[0].createdAt;
     for (let index = signals.length - 1; index >= 0 && signals[index].createdAt === excludeCreatedAt; index--) {
@@ -144,30 +144,28 @@ function difference(signals: UserSignal[], excludes: UserSignal[]) {
     }
 }
 
-function SendUserSignal(this: Game_Interpreter, command: string, signalDataVariableIdStr?: string, userIdVariableIdStr?: string) {
+function SendGlobalSignal(this: Game_Interpreter, command: string, signalDataVariableIdStr?: string) {
     const signalDataVariableId = toValidVariableId(signalDataVariableIdStr, command, "signalDataVariableId");
     const signalData = String($gameVariables.value(signalDataVariableId));
-    const userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
-    const userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
-    if (sendUserSignal) {
-        this.bindPromiseForRPGAtsumaruPlugin(sendUserSignal(userId, signalData),
+    if (sendGlobalSignal) {
+        this.bindPromiseForRPGAtsumaruPlugin(sendGlobalSignal(signalData),
             () => $gameVariables.setValue(parameters.errorMessage, 0),
             error => $gameVariables.setValue(parameters.errorMessage, error.message)
         );
     }
 }
 
-function GetUserSignal(this: Game_Interpreter) {
-    if (getUserSignals) {
-        const store = $gameSystem._userSignalStoreForRPGAtsumaruPlugin;
+function GetGlobalSignal(this: Game_Interpreter) {
+    if (getGlobalSignals) {
+        const store = $gameSystem._globalSignalStoreForRPGAtsumaruPlugin;
         if (store.signals.length === 0) {
             this.bindPromiseForRPGAtsumaruPlugin(
-                throttlePromise(() => fetchUserSignal(getUserSignals, store)),
-                () => setUserSignal(store),
+                throttlePromise(() => fetchGlobalSignal(getGlobalSignals, store)),
+                () => setGlobalSignal(store),
                 error => $gameVariables.setValue(parameters.errorMessage, error.message)
             );
         } else {
-            setUserSignal(store);
+            setGlobalSignal(store);
         }
     }
 }
@@ -187,13 +185,13 @@ function throttlePromise<T>(promise: () => Promise<T>): Promise<T> {
     });
 }
 
-function setUserSignal(store: UserSignalStore) {
+function setGlobalSignal(store: GlobalSignalStore) {
     $gameVariables.setValue(parameters.signalData, 0);
     $gameVariables.setValue(parameters.senderId, 0);
     $gameVariables.setValue(parameters.senderName, 0);
     $gameVariables.setValue(parameters.restCount, store.signals.length);
     $gameVariables.setValue(parameters.errorMessage, 0);
-    const signal: UserSignal | undefined = store.signals.pop();
+    const signal: GlobalSignal | undefined = store.signals.pop();
     if (signal) {
         $gameVariables.setValue(parameters.signalData, isNumber(signal.data) ? +signal.data : signal.data);
         $gameVariables.setValue(parameters.senderId, signal.senderId);

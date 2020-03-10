@@ -1,5 +1,5 @@
 /*:
- * @plugindesc RPGアツマールの作者情報ダイアログAPI操作のための(Experimental版)プラグインです
+ * @plugindesc RPGアツマールの作者情報ダイアログAPI操作のためのプラグインです
  * @author RPGアツマール開発チーム
  *
  * @help
@@ -15,7 +15,7 @@ import { toNaturalOrUndefined } from "./utils/parameter";
 import { addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";
 
 declare const window: Window;
-const displayCreatorInformationModal = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.popups && window.RPGAtsumaru.experimental.popups.displayCreatorInformationModal;
+const displayCreatorInformationModal = window.RPGAtsumaru && window.RPGAtsumaru.popups.displayCreatorInformationModal;
 
 prepareBindPromise();
 

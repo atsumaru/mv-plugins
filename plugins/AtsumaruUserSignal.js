@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruGetUserInformationExperimental.js
+// AtsumaruUserSignal.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -163,31 +163,31 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールの特定ユーザーの情報を取得するAPIのための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのユーザーシグナルのためのプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param name
+     * @param signalData
      * @type variable
-     * @text ユーザー名
-     * @desc ユーザー情報取得時に、ユーザー名を代入する変数の番号を指定します。
+     * @text シグナルデータ
+     * @desc ユーザーシグナルの取得時に、シグナルデータを代入する変数の番号を指定します。
      * @default 0
      *
-     * @param profile
+     * @param senderId
      * @type variable
-     * @text 自己紹介
-     * @desc ユーザー情報取得時に、自己紹介を代入する変数の番号を指定します。
+     * @text 送信者のユーザーID
+     * @desc ユーザーシグナルの取得時に、送信者のユーザーIDを代入する変数の番号を指定します。
      * @default 0
      *
-     * @param twitterId
+     * @param senderName
      * @type variable
-     * @text TwitterID
-     * @desc ユーザー情報取得時に、TwitterIDを代入する変数の番号を指定します。
+     * @text 送信者のユーザー名
+     * @desc ユーザーシグナルの取得時に、送信者のユーザー名を代入する変数の番号を指定します。
      * @default 0
      *
-     * @param url
+     * @param restCount
      * @type variable
-     * @text ウェブサイト
-     * @desc ユーザー情報取得時に、ウェブサイトを代入する変数の番号を指定します。
+     * @text 残シグナル数
+     * @desc ユーザーシグナルの取得時に、今取得したものを含めた残りのシグナル数を代入する変数の番号を指定します。
      * @default 0
      *
      * @param errorMessage
@@ -197,45 +197,137 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「ユーザー情報取得」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
-     *
-     * RPGアツマールで、指定したユーザーのプロフィールなどの情報を取得します。
+     * このプラグインは、アツマールAPIの「ユーザーシグナル」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/signal)を参照してください。
      *
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
-     *   GetUserInformation <userIdVariableId>
-     *   特定ユーザー取得 <userIdVariableId>
-     *      # 変数<userIdVariableId>からユーザーIDを読み取り、そのユーザーの情報を取得します。
-     *      # 取得した情報は、プラグインパラメータで指定した変数IDに代入されます。
-     *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
+     *   SendUserSignal <signalDataVariableId> <userIdVariableId>
+     *   ユーザーシグナル送信 <signalDataVariableId> <userIdVariableId>
+     *     # 変数<signalDataVariableId>からシグナルデータを読み取り、
+     *          それを変数<userIdVariableId>から読み取ったユーザーIDの相手に送信します。
+     *     # 例: SendUserSignal 1 2
+     *     #   : ユーザーシグナル送信 1 2
+     *
+     *   GetUserSignal
+     *   ユーザーシグナル取得
+     *      # まだ取得したことがないユーザーシグナルの中で最も古い一件を読み込み、
+     *          プラグインパラメータで指定した変数に値をセットします。
+     *      # 残シグナル数が0だった時は、シグナルデータと送信者のユーザーID/名前には0がセットされます。
+     *      # 残シグナル数が0か1だった時は、次の取得コマンドで新たなシグナルの受信を試みますので
+     *          時間がかかることがあります。スムーズに実行したい場合は、
+     *          次の取得コマンドの実行（受信）までに１０秒以上の時間を空けてください。
+     *      # 例: GetUserSignal
+     *      #   : ユーザーシグナル取得
      *
      * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
-     *      GetUserInformation（特定ユーザー取得）
+     *      SendUserSignal（ユーザーシグナル送信）
+     *          無視される（エラーメッセージにも何も代入されない）
+     *      GetUserSignal（ユーザーシグナル取得）
      *          無視される（エラーメッセージにも何も代入されない）
      *
      * ※「並列処理」の中でプラグインコマンドを利用しますと
      *   その時セーブしたセーブデータの状態が不確定になりますので、
      *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetUserInformationExperimental"));
-    var getUserInformation = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getUserInformation;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruUserSignal"));
+    var signal = window.RPGAtsumaru && window.RPGAtsumaru.signal;
+    var sendUserSignal = signal && signal.sendSignalToUser;
+    var getUserSignals = signal && signal.getUserSignals;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        GetUserInformation: GetUserInformation,
-        "特定ユーザー取得": GetUserInformation
+        SendUserSignal: SendUserSignal,
+        "ユーザーシグナル送信": SendUserSignal,
+        GetUserSignal: GetUserSignal,
+        "ユーザーシグナル取得": GetUserSignal
     });
-    function GetUserInformation(command, userIdVariableIdStr) {
+    hookStatic(DataManager, "createGameObjects", function (origin) { return function () {
+        origin.apply(this, arguments);
+        initialFetch();
+    }; });
+    hookStatic(DataManager, "extractSaveContents", function (origin) { return function () {
+        origin.apply(this, arguments);
+        initialFetch();
+    }; });
+    function initialFetch() {
+        if (!$gameSystem._userSignalStoreForRPGAtsumaruPlugin && getUserSignals) {
+            $gameSystem._userSignalStoreForRPGAtsumaruPlugin = { signals: [], lastPoppedSignals: [] };
+            fetchUserSignal(getUserSignals, $gameSystem._userSignalStoreForRPGAtsumaruPlugin);
+        }
+    }
+    function fetchUserSignal(getUserSignals, store) {
+        return getUserSignals().then(function (userSignals) {
+            userSignals.sort(function (a, b) { return b.createdAt - a.createdAt; });
+            if (store.lastPoppedSignals.length > 0) {
+                var lastIndex = userSignals.map(function (signal) { return signal.createdAt; })
+                    .lastIndexOf(store.lastPoppedSignals[0].createdAt);
+                if (lastIndex !== -1) {
+                    userSignals = userSignals.slice(0, lastIndex + 1);
+                    difference(userSignals, store.lastPoppedSignals);
+                }
+            }
+            store.signals = userSignals;
+        });
+    }
+    function difference(signals, excludes) {
+        var excludeIds = excludes.map(function (signal) { return signal.id; });
+        var excludeCreatedAt = excludes[0].createdAt;
+        for (var index = signals.length - 1; index >= 0 && signals[index].createdAt === excludeCreatedAt; index--) {
+            if (excludeIds.indexOf(signals[index].id) !== -1) {
+                signals.splice(index, 1);
+            }
+        }
+    }
+    function SendUserSignal(command, signalDataVariableIdStr, userIdVariableIdStr) {
+        var signalDataVariableId = toValidVariableId(signalDataVariableIdStr, command, "signalDataVariableId");
+        var signalData = String($gameVariables.value(signalDataVariableId));
         var userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
         var userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
-        if (getUserInformation) {
-            this.bindPromiseForRPGAtsumaruPlugin(getUserInformation(userId), function (userInformation) {
-                $gameVariables.setValue(parameters.name, userInformation.name);
-                $gameVariables.setValue(parameters.profile, userInformation.profile);
-                $gameVariables.setValue(parameters.twitterId, userInformation.twitterId);
-                $gameVariables.setValue(parameters.url, userInformation.url);
-                $gameVariables.setValue(parameters.errorMessage, 0);
-            }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+        if (sendUserSignal) {
+            this.bindPromiseForRPGAtsumaruPlugin(sendUserSignal(userId, signalData), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+        }
+    }
+    function GetUserSignal() {
+        if (getUserSignals) {
+            var store_1 = $gameSystem._userSignalStoreForRPGAtsumaruPlugin;
+            if (store_1.signals.length === 0) {
+                this.bindPromiseForRPGAtsumaruPlugin(throttlePromise(function () { return fetchUserSignal(getUserSignals, store_1); }), function () { return setUserSignal(store_1); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
+            }
+            else {
+                setUserSignal(store_1);
+            }
+        }
+    }
+    var lastApiCallTime = 0;
+    var apiCallInterval = 10000;
+    // Promiseの間隔が１０秒に１回を切るようなら間隔が開くようにPromiseの開始を遅延する
+    function throttlePromise(promise) {
+        return new Promise(function (resolve) {
+            var delta = lastApiCallTime + apiCallInterval - Date.now();
+            if (delta > 0) {
+                setTimeout(function () { return resolve(throttlePromise(promise)); }, delta);
+            }
+            else {
+                lastApiCallTime = Date.now();
+                resolve(promise());
+            }
+        });
+    }
+    function setUserSignal(store) {
+        $gameVariables.setValue(parameters.signalData, 0);
+        $gameVariables.setValue(parameters.senderId, 0);
+        $gameVariables.setValue(parameters.senderName, 0);
+        $gameVariables.setValue(parameters.restCount, store.signals.length);
+        $gameVariables.setValue(parameters.errorMessage, 0);
+        var signal = store.signals.pop();
+        if (signal) {
+            $gameVariables.setValue(parameters.signalData, isNumber(signal.data) ? +signal.data : signal.data);
+            $gameVariables.setValue(parameters.senderId, signal.senderId);
+            $gameVariables.setValue(parameters.senderName, signal.senderName);
+            if (store.lastPoppedSignals.length > 0 && store.lastPoppedSignals[0].createdAt !== signal.createdAt) {
+                store.lastPoppedSignals = [];
+            }
+            store.lastPoppedSignals.push(signal);
         }
     }
 

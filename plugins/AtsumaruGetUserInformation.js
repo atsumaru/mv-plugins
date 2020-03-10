@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruNiconicoukokuExperimental.js
+// AtsumaruGetUserInformation.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -9,6 +9,9 @@
 (function () {
     'use strict';
 
+    function isNumber(value) {
+        return value !== "" && !isNaN(value);
+    }
     function isInteger(value) {
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     }
@@ -100,6 +103,34 @@
         }; });
     }
 
+    function toDefined(value, command, name) {
+        if (value === undefined) {
+            throw new Error("「" + command + "」コマンドでは、" + name + "を指定してください。");
+        }
+        else {
+            return value;
+        }
+    }
+    function toNatural(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isNatural(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
+        }
+    }
+    function toValidVariableId(value, command, name) {
+        value = toDefined(value, command, name);
+        var number = +value;
+        if (isNumber(value) && isValidVariableId(number)) {
+            return number;
+        }
+        else {
+            throw new Error("「" + command + "」コマンドでは、" + name + "には1～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + name + ": " + value);
+        }
+    }
     function toTypedParameters(parameters, isArray) {
         if (isArray === void 0) { isArray = false; }
         var result = isArray ? [] : {};
@@ -132,19 +163,31 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールでニコニ広告ポイントを取得するプラグインです
+     * @plugindesc RPGアツマールの特定ユーザーの情報を取得するAPIのためのプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param activePoint
+     * @param name
      * @type variable
-     * @text アクティブポイント
-     * @desc 広告期間以内の広告ポイントを代入する変数の番号を指定します。
+     * @text ユーザー名
+     * @desc ユーザー情報取得時に、ユーザー名を代入する変数の番号を指定します。
      * @default 0
      *
-     * @param totalPoint
+     * @param profile
      * @type variable
-     * @text トータルポイント
-     * @desc 累計の広告ポイントを代入する変数の番号を指定します。
+     * @text 自己紹介
+     * @desc ユーザー情報取得時に、自己紹介を代入する変数の番号を指定します。
+     * @default 0
+     *
+     * @param twitterId
+     * @type variable
+     * @text TwitterID
+     * @desc ユーザー情報取得時に、TwitterIDを代入する変数の番号を指定します。
+     * @default 0
+     *
+     * @param url
+     * @type variable
+     * @text ウェブサイト
+     * @desc ユーザー情報取得時に、ウェブサイトを代入する変数の番号を指定します。
      * @default 0
      *
      * @param errorMessage
@@ -154,27 +197,43 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「ニコニ広告ポイント取得」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/nicoad)を参照してください。
+     * このプラグインは、アツマールAPIの「ユーザー情報取得」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
      *
-     * プラグインコマンド:
-     *   GetNicoadPoints         # ニコニ広告ポイント（アクティブポイントとトータルポイント）を取得する
-     *   ニコニ広告ポイント取得         # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
+     * RPGアツマールで、指定したユーザーのプロフィールなどの情報を取得します。
+     *
+     * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
+     *   GetUserInformation <userIdVariableId>
+     *   特定ユーザー取得 <userIdVariableId>
+     *      # 変数<userIdVariableId>からユーザーIDを読み取り、そのユーザーの情報を取得します。
+     *      # 取得した情報は、プラグインパラメータで指定した変数IDに代入されます。
+     *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
+     *
+     * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
+     *      GetUserInformation（特定ユーザー取得）
+     *          無視される（エラーメッセージにも何も代入されない）
+     *
+     * ※「並列処理」の中でプラグインコマンドを利用しますと
+     *   その時セーブしたセーブデータの状態が不確定になりますので、
+     *   可能な限り「並列処理」以外のトリガーでご利用ください。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruNiconicoukokuExperimental"));
-    var getPoints = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.nicoad && window.RPGAtsumaru.experimental.nicoad.getPoints;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetUserInformation"));
+    var getUserInformation = window.RPGAtsumaru && window.RPGAtsumaru.user.getUserInformation;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        GetNicoadPoints: GetNicoadPoints,
-        ニコニ広告ポイント取得: GetNicoadPoints
+        GetUserInformation: GetUserInformation,
+        "特定ユーザー取得": GetUserInformation
     });
-    function GetNicoadPoints() {
-        if (getPoints) {
-            this.bindPromiseForRPGAtsumaruPlugin(getPoints(), function (_a) {
-                var activePoint = _a.activePoint, totalPoint = _a.totalPoint;
-                $gameVariables.setValue(parameters.activePoint, activePoint);
-                $gameVariables.setValue(parameters.totalPoint, totalPoint);
+    function GetUserInformation(command, userIdVariableIdStr) {
+        var userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
+        var userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
+        if (getUserInformation) {
+            this.bindPromiseForRPGAtsumaruPlugin(getUserInformation(userId), function (userInformation) {
+                $gameVariables.setValue(parameters.name, userInformation.name);
+                $gameVariables.setValue(parameters.profile, userInformation.profile);
+                $gameVariables.setValue(parameters.twitterId, userInformation.twitterId);
+                $gameVariables.setValue(parameters.url, userInformation.url);
                 $gameVariables.setValue(parameters.errorMessage, 0);
             }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }

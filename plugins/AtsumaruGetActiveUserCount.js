@@ -1,7 +1,7 @@
 //=============================================================================
-// AtsumaruSharedSaveExperimental.js
+// AtsumaruGetActiveUserCount.js
 //
-// Copyright (c) 2018-2019 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -121,16 +121,6 @@
             throw new Error("「" + command + "」コマンドでは、" + name + "には自然数を指定してください。" + name + ": " + value);
         }
     }
-    function toValidVariableId(value, command, name) {
-        value = toDefined(value, command, name);
-        var number = +value;
-        if (isNumber(value) && isValidVariableId(number)) {
-            return number;
-        }
-        else {
-            throw new Error("「" + command + "」コマンドでは、" + name + "には1～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + name + ": " + value);
-        }
-    }
     function toTypedParameters(parameters, isArray) {
         if (isArray === void 0) { isArray = false; }
         var result = isArray ? [] : {};
@@ -163,20 +153,14 @@
     }
 
     /*:
-     * @plugindesc RPGアツマールの共有セーブのための(Experimental版)プラグインです
+     * @plugindesc RPGアツマールのオンライン人数を取得するプラグインです
      * @author RPGアツマール開発チーム
      *
-     * @param startVariableId
+     * @param count
      * @type variable
-     * @text 共有セーブの保存範囲(開始)
-     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
-     * @default 0
-     *
-     * @param finishVariableId
-     * @type variable
-     * @text 共有セーブの保存範囲(終了)
-     * @desc 「共有セーブ保存」コマンドで保存する変数の番号を指定します。
-     * @default 0
+     * @text オンライン人数
+     * @desc オンライン人数を代入する変数の番号を指定します。
+     * @default 1
      *
      * @param errorMessage
      * @type variable
@@ -185,78 +169,32 @@
      * @default 0
      *
      * @help
-     * このプラグインは、アツマールAPIの「共有セーブ」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/shared-save)を参照してください。
+     * このプラグインは、アツマールAPIの「オンライン人数を取得」を利用するためのプラグインです。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/user)を参照してください。
+     *
+     * RPGアツマールで、今から1～60分前までの間にこのゲームを遊んでいるログインユーザーの人数をプラグインコマンドで取得します。
      *
      * プラグインコマンド（英語版と日本語版のコマンドがありますが、どちらも同じ動作です）:
-     *   SetSharedSave
-     *   共有セーブ保存
-     *      # 共有セーブの保存範囲(開始-終了)で指定した範囲の変数を読み込み、
-     *          自分の共有セーブとして保存します。
-     *      # 例: SetSharedSave
-     *      #   : 共有セーブ保存
-     *
-     *   GetSharedSave <userIdVariableId> <startVariableId>
-     *   共有セーブ取得 <userIdVariableId> <startVariableId>
-     *      # 変数<userIdVariableId>からユーザーIDを読み取り、
-     *          そのユーザーの共有セーブを<startVariableId>を先頭にして代入します。
-     *      # 例: GetSharedSave 1 201
-     *      #   : 共有セーブ取得 1 201
-     *          （共有セーブの保存範囲が101-150で計50個の場合、変数1番に格納されたユーザーIDの人の共有セーブを201-250に代入）
-     *
-     * アツマール外（テストプレイや他のサイト、ダウンロード版）での挙動:
-     *      SetSharedSave（共有セーブ保存）
-     *          無視される（エラーメッセージにも何も代入されない）
-     *      GetSharedSave（共有セーブ取得）
-     *          無視される（エラーメッセージにも何も代入されない）
-     *
-     * 備考:
-     * ・本プラグインは、共有セーブの保存領域をすべて使用します。
-     *      そのため、共有セーブを活用する他のプラグインと共存することはできません。
-     * ・ゲームを公開後に共有セーブの保存範囲を変更する時は、
-     *      古い保存範囲のセーブデータとの互換性にご注意ください。
-     *
-     * ※「並列処理」の中でプラグインコマンドを利用しますと
-     *   その時セーブしたセーブデータの状態が不確定になりますので、
-     *   可能な限り「並列処理」以外のトリガーでご利用ください。
+     *   GetActiveUserCount <minutes>
+     *   オンライン人数取得 <minutes>
+     *      # 今から<minutes>分前までの間のオンライン人数を取得します。1～60までの整数を指定可能です。
+     *      # 取得した情報は、プラグインパラメータで指定した変数IDに代入されます。
+     *      # もしも情報が取得できなかった場合は、エラーメッセージが代入されます。
      */
-    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruSharedSaveExperimental"));
-    var setItems = window.RPGAtsumaru && window.RPGAtsumaru.storage.setItems;
-    var getSharedItems = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.storage && window.RPGAtsumaru.experimental.storage.getSharedItems;
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetActiveUserCount"));
+    var getActiveUserCount = window.RPGAtsumaru && window.RPGAtsumaru.user.getActiveUserCount;
     ensureValidVariableIds(parameters);
     prepareBindPromise();
     addPluginCommand({
-        SetSharedSave: SetSharedSave,
-        "共有セーブ保存": SetSharedSave,
-        GetSharedSave: GetSharedSave,
-        "共有セーブ取得": GetSharedSave
+        GetActiveUserCount: GetActiveUserCount,
+        "オンライン人数取得": GetActiveUserCount
     });
-    function SetSharedSave() {
-        var variables = [];
-        for (var i = parameters.startVariableId; i <= parameters.finishVariableId; i++) {
-            variables.push($gameVariables.value(i));
-        }
-        var value = JSON.stringify(variables);
-        if (setItems) {
-            this.bindPromiseForRPGAtsumaruPlugin(setItems([{ key: "Atsumaru Shared", value: value }]), function () { return $gameVariables.setValue(parameters.errorMessage, 0); }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
-        }
-    }
-    function GetSharedSave(command, userIdVariableIdStr, startVariableIdStr) {
-        var userIdVariableId = toValidVariableId(userIdVariableIdStr, command, "userIdVariableId");
-        var userId = toNatural($gameVariables.value(userIdVariableId), command, "userId");
-        var startVariableId = toValidVariableId(startVariableIdStr, command, "startVariableId");
-        if (getSharedItems) {
-            this.bindPromiseForRPGAtsumaruPlugin(getSharedItems([userId]), function (sharedSaves) {
-                if (sharedSaves[userId]) {
-                    var variables = JSON.parse(sharedSaves[userId]);
-                    for (var i = 0; i < variables.length; i++) {
-                        $gameVariables.setValue(i + startVariableId, variables[i]);
-                    }
-                    $gameVariables.setValue(parameters.errorMessage, 0);
-                }
-                else {
-                    $gameVariables.setValue(parameters.errorMessage, "指定したユーザーの共有セーブは見つかりませんでした");
-                }
+    function GetActiveUserCount(command, minutesStr) {
+        var minutes = toNatural(minutesStr, command, "minutes");
+        if (getActiveUserCount) {
+            this.bindPromiseForRPGAtsumaruPlugin(getActiveUserCount(minutes), function (count) {
+                $gameVariables.setValue(parameters.count, count);
+                $gameVariables.setValue(parameters.errorMessage, 0);
             }, function (error) { return $gameVariables.setValue(parameters.errorMessage, error.message); });
         }
     }

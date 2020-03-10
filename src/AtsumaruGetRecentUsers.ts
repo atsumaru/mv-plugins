@@ -52,8 +52,8 @@ interface Parameters {
 }
 
 declare const window: Window;
-const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetRecentUsersExperimental")) as Parameters;
-const getRecentUsers = window.RPGAtsumaru && window.RPGAtsumaru.experimental && window.RPGAtsumaru.experimental.user && window.RPGAtsumaru.experimental.user.getRecentUsers;
+const parameters = toTypedParameters(PluginManager.parameters("AtsumaruGetRecentUsers")) as Parameters;
+const getRecentUsers = window.RPGAtsumaru && window.RPGAtsumaru.user.getRecentUsers;
 
 ensureValidVariableIds(parameters);
 prepareBindPromise();
