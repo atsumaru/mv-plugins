@@ -67,7 +67,10 @@ declare const SoundManager: any;
 declare const TextManager: any;
 declare const SceneManager: any;
 declare const BattleManager: any;
-declare const PluginManager: any;
+declare const PluginManager: {
+    parameters: (name: string) => { [key: string]: string };
+    registerCommand: (pluginName: string, commandName: string, func: (this: Game_Interpreter, args: { [name: string]: string }) => void) => void;
+}
 
 declare class Game_Temp {
     initialize(): void
@@ -108,6 +111,8 @@ declare class Game_Interpreter {
     _eventInfo: {[key: string]: any}
     _promiseResolverForRPGAtsumaruPlugin?: () => boolean
     bindPromiseForRPGAtsumaruPlugin<T>(promise: Promise<T>, resolve?: (value : T) => void, reject?: (error: AtsumaruApiError) => void): void
+    _promiseResolver?: () => boolean
+    waitUntilPromiseSettled<T>(promise: Promise<T>, resolve?: (value : T) => void, reject?: (error: Error) => void): void
     executeCommand(): boolean
     pluginCommand(command: string, args: string[]): void
 }

@@ -40,7 +40,7 @@
     }
     // Promiseが終了するまでイベントコマンドをウェイトするための処理を追加する
     function prepareBindPromise() {
-        if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
+        if (!!Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
             return;
         }
         // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
@@ -157,7 +157,7 @@
             for (var key in parameters) {
                 var variableId = parameters[key];
                 if (variableId !== 0 && !isValidVariableId(variableId)) {
-                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                    throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
                 }
             }
             return true;

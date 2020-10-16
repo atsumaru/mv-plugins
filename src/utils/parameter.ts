@@ -98,7 +98,7 @@ export function ensureValidVariableIds(parameters: any) {
         for (const key in parameters) {
             const variableId = parameters[key];
             if (variableId !== 0 && !isValidVariableId(variableId)) {
-                throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variable.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
+                throw new Error("プラグインパラメータ「" + key + "」には、0～" + ($dataSystem.variables.length - 1) + "までの整数を指定してください。" + key + ": " + variableId);
             }
         }
         return true;

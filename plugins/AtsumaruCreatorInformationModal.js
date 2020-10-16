@@ -34,7 +34,7 @@
     }
     // Promiseが終了するまでイベントコマンドをウェイトするための処理を追加する
     function prepareBindPromise() {
-        if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
+        if (!!Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
             return;
         }
         // Promiseを実行しつつ、それをツクールのインタプリタと結びつけて解決されるまで進行を止める
