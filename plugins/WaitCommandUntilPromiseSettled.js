@@ -86,6 +86,6 @@ Game_Interpreter.prototype.waitUntilPromiseSettled = function(promise, resolve, 
                 return false;
             }
         }
-        return _Game_Interpreter_executeCommand.apply(this, arguments as any);
+        return _Game_Interpreter_executeCommand.apply(this, arguments);
     };
 }
