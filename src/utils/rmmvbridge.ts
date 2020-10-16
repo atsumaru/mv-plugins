@@ -20,7 +20,7 @@ export function addPluginCommand(commands: {[command: string]: (command: string,
 
 // Promiseが終了するまでイベントコマンドをウェイトするための処理を追加する
 export function prepareBindPromise() {
-    if (Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
+    if (!!Game_Interpreter.prototype.bindPromiseForRPGAtsumaruPlugin) {
         return;
     }
 

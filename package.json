@@ -11,7 +11,7 @@
     "eslint-plugin-compat": "^2.2.0",
     "glob": "^7.1.3",
     "husky": "^0.14.3",
-    "lint-staged": "^7.0.4",
+    "lint-staged": "^8.1.5",
     "rollup": "^1.15.6",
     "rollup-plugin-typescript2": "^0.21.2",
     "tslib": "^1.9.3",
