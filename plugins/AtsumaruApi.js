@@ -614,6 +614,116 @@
  * @type variable
  * @text *エラーメッセージ
  * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command openGiftCatalog
+ * @text ギフト投稿画面表示
+ * @desc ギフトを一覧表示し、投稿を促す画面を表示します。
+ *
+ * @command getGiftTotalPoint
+ * @text 合計ギフトポイント取得
+ * @desc このゲームに対して、合計何ポイントギフトされたかを取得します。
+ *
+ * @arg totalPoint
+ * @type variable
+ * @text *合計ギフトポイント
+ * @desc コマンド成功時、この変数にすべてのギフトの合計ポイントを代入します。
+ *
+ * @arg errorMessage
+ * @type variable
+ * @text *エラーメッセージ
+ * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command getGiftMyPoint
+ * @text 自己ギフトポイント取得
+ * @desc このゲームに対して、このプレイヤーが合計何ポイントギフトしたかを取得します。
+ *
+ * @arg myPoint
+ * @type variable
+ * @text *自己ギフトポイント
+ * @desc コマンド成功時、この変数にこのプレイヤーのギフトの合計ポイントを代入します。
+ *
+ * @arg errorMessage
+ * @type variable
+ * @text *エラーメッセージ
+ * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command getGiftHistories
+ * @text ギフト履歴取得
+ * @desc このゲームに対してのギフトの履歴を、最新順に最大30件まで取得します。
+ *
+ * @arg count
+ * @type variable
+ * @text *取得できた件数
+ * @desc コマンド成功時、この変数にギフトを何件取得できたかを代入します。
+ *
+ * @arg name
+ * @type variable
+ * @text *ユーザー名(先頭)
+ * @desc コマンド成功時、この変数を先頭にユーザー名(※匿名なら0)を代入します。例:201を指定すると変数201番～230番に代入
+ *
+ * @arg point
+ * @type variable
+ * @text *ギフトポイント(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトポイントを代入します。例:201を指定すると変数201番～230番に代入
+ *
+ * @arg comment
+ * @type variable
+ * @text *コメント(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトに添えられたコメントを代入します。コメントがない場合、0を代入します
+ *
+ * @arg thanks
+ * @type switch
+ * @text *作者からのハート(先頭)
+ * @desc コマンド成功時、このスイッチを先頭にハートがあればONにします。例:201を指定するとスイッチ201番～230番に代入
+ *
+ * @arg reply
+ * @type variable
+ * @text *作者からの返信(先頭)
+ * @desc コマンド成功時、この変数を先頭に作者からの返信を代入します。返信が(まだ)ない場合、0を代入します
+ *
+ * @arg mapId
+ * @type variable
+ * @text *マップID(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトが投稿されたマップIDを代入します。例:201を指定すると変数201番～230番に代入
+ *
+ * @arg context
+ * @type variable
+ * @text *context(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトのゲーム位置(gpos)を代入します。例:201を指定すると変数201番～230番に代入
+ *
+ * @arg createdAt
+ * @type variable
+ * @text *投稿時刻(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトの投稿時刻を代入します。時刻は1970年1月1日午前9時からの経過秒数で表されます
+ *
+ * @arg errorMessage
+ * @type variable
+ * @text *エラーメッセージ
+ * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command getGiftRanking
+ * @text ギフトランキング取得
+ * @desc ギフトランキングを1位から順に最大5件まで取得します。5位までとは限りません（例：1位,1位,3位,4位,4位）
+ *
+ * @arg count
+ * @type variable
+ * @text *取得できた件数
+ * @desc コマンド成功時、この変数にギフトを何件取得できたかを代入します。
+ *
+ * @arg name
+ * @type variable
+ * @text *ユーザー名(先頭)
+ * @desc コマンド成功時、この変数を先頭にユーザー名(※匿名なら0)を代入します。例:201を指定すると変数201番～205番に代入
+ *
+ * @arg point
+ * @type variable
+ * @text *ギフトポイント(先頭)
+ * @desc コマンド成功時、この変数を先頭にギフトポイントを代入します。例:201を指定すると変数201番～205番に代入
+ *
+ * @arg errorMessage
+ * @type variable
+ * @text *エラーメッセージ
+ * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
  */
 
 /*~struct~globalServerVariable:
@@ -1040,6 +1150,125 @@ PluginManager.registerCommand("AtsumaruApi", "getNicoadRanking", function({ coun
                 if (contribution) {
                     for (let i = 0; i < ranking.length; i++) {
                         $gameVariables.setValue(contribution + i, ranking[i].totalContribution);
+                    }
+                }
+                $gameVariables.setValue(errorMessage, 0);
+            },
+            error => $gameVariables.setValue(errorMessage, error.message)
+        );
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "openGiftCatalog", function() {
+    if (window.RPGAtsumaru) {
+        window.RPGAtsumaru.gift.displayCatalogModal();
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "getGiftTotalPoint", function({ totalPoint, errorMessage }) {
+    if (window.RPGAtsumaru) {
+        this.waitUntilPromiseSettled(window.RPGAtsumaru.gift.getTotalPoints(),
+            point => {
+                $gameVariables.setValue(totalPoint, point);
+                $gameVariables.setValue(errorMessage, 0);
+            },
+            error => $gameVariables.setValue(errorMessage, error.message)
+        );
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "getGiftMyPoint", function({ myPoint, errorMessage }) {
+    if (window.RPGAtsumaru) {
+        this.waitUntilPromiseSettled(window.RPGAtsumaru.gift.getMyPoints(),
+            points => {
+                let point = 0;
+                for (const key in points) {
+                    point += points[key];
+                }
+                $gameVariables.setValue(myPoint, point);
+                $gameVariables.setValue(errorMessage, 0);
+            },
+            error => $gameVariables.setValue(errorMessage, error.message)
+        );
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "getGiftHistories", function({ count, name, point, comment, thanks, reply, mapId, context, createdAt, errorMessage }) {
+    if (window.RPGAtsumaru) {
+        this.waitUntilPromiseSettled(window.RPGAtsumaru.gift.getHistories(),
+            histories => {
+                $gameVariables.setValue(count, histories.length);
+                name = +name;
+                if (name) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(name + i, histories[i].userName);
+                    }
+                }
+                point = +point;
+                if (point) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(point + i, histories[i].point);
+                    }
+                }
+                comment = +comment;
+                if (comment) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(comment + i, histories[i].comment);
+                    }
+                }
+                thanks = +thanks;
+                if (thanks) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameSwitches.setValue(thanks + i, histories[i].thanks);
+                    }
+                }
+                reply = +reply;
+                if (reply) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(reply + i, histories[i].reply);
+                    }
+                }
+                mapId = +mapId;
+                if (mapId) {
+                    for (let i = 0; i < histories.length; i++) {
+                        const exec = /^map(\d+)$/.exec(histories[i].sceneName);
+                        $gameVariables.setValue(mapId + i, exec ? +exec[1] : 0);
+                    }
+                }
+                context = +context;
+                if (context) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(context + i, histories[i].context);
+                    }
+                }
+                createdAt = +createdAt;
+                if (createdAt) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(createdAt + i, histories[i].createdAt);
+                    }
+                }
+                $gameVariables.setValue(errorMessage, 0);
+            },
+            error => $gameVariables.setValue(errorMessage, error.message)
+        );
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "getGiftRanking", function({ count, name, point, errorMessage }) {
+    if (window.RPGAtsumaru) {
+        this.waitUntilPromiseSettled(window.RPGAtsumaru.gift.getRanking(),
+            ranking => {
+                $gameVariables.setValue(count, ranking.length);
+                name = +name;
+                if (name) {
+                    for (let i = 0; i < ranking.length; i++) {
+                        $gameVariables.setValue(name + i, ranking[i].userName);
+                    }
+                }
+                point = +point;
+                if (point) {
+                    for (let i = 0; i < ranking.length; i++) {
+                        $gameVariables.setValue(point + i, ranking[i].point);
                     }
                 }
                 $gameVariables.setValue(errorMessage, 0);
