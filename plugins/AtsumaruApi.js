@@ -37,6 +37,65 @@
  *   コマンド実行後は、実行結果を扱う前にまずコマンドに成功している
  *   （＝エラーメッセージが0である）ことを確認してから結果を利用してください。
  *
+ * @param commonOnComment
+ * @type common_event
+ * @text コメント・ギフトが流れたらコモンイベント起動
+ * @desc 画面上にコメントやギフトが流れた時に、それを取得しつつ指定のコモンイベントを起動します。
+ *
+ * @param commentCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *コメント
+ * @desc コモンイベント起動時、この変数にコメントの内容を代入します。コメントがない場合、0を代入します
+ *
+ * @param commandCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *コマンド
+ * @desc コモンイベント起動時、この変数にコメントのコマンドを代入します。コマンドがない場合、0を代入します
+ *
+ * @param createdAtCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *投稿時刻
+ * @desc コモンイベント起動時、この変数にコメントの投稿時刻を代入します。時刻は1970年1月1日午前9時からの経過秒数で表されます
+ *
+ * @param isPostCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *今投稿した？
+ * @desc コモンイベント起動時、これが今このユーザー本人が投稿したものである場合このスイッチをONにします。
+ *
+ * @param isGiftCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *ギフト？
+ * @desc コモンイベント起動時、これがギフトである場合このスイッチをONにします。
+ *
+ * @param nameCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *ユーザー名
+ * @desc コモンイベント起動時、非匿名のギフトの場合、この変数にユーザー名を代入します。
+ *
+ * @param pointCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *ギフトポイント
+ * @desc コモンイベント起動時、ギフトの場合、この変数に消費ポイント（ギフトの価格）を代入します。
+ *
+ * @param thanksCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *作者からのハート
+ * @desc コモンイベント起動時、ギフトの場合、作者からのハートが贈られていればこのスイッチをONにします。
+ *
+ * @param replyCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *作者からの返信
+ * @desc コモンイベント起動時、ギフトの場合、この変数に作者からの返信を代入します。返信が(まだ)ない場合、0を代入します
+ *
  * @command isAtsumaru
  * @text アツマールかどうか判定
  * @desc RPGアツマール上でプレイしているかどうかを判定します。
@@ -54,6 +113,37 @@
  * @type variable
  * @text *エラーメッセージ
  * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command setGposMode
+ * @text コメントgposモード設定
+ * @desc コメントのgposモードを設定します。noneで手動モード（自動変化なし）になります。
+ *
+ * @arg mode
+ * @type select
+ * @option v1
+ * @option v2
+ * @option none
+ *
+ * @command setGposScene
+ * @text コメントシーン設定
+ * @desc コメントgposのsceneを手動設定します。
+ *
+ * @arg scene
+ * @type string
+ *
+ * @command setGposContext
+ * @text コメントコンテキスト設定
+ * @desc コメントgposのcontextを手動設定します。
+ *
+ * @arg context
+ * @type string
+ *
+ * @command setGposVerbose
+ * @text コメントgpos表示
+ * @desc ONにすると、コメントgposの現在値をコンソールに表示します（verboseモード）。
+ *
+ * @arg verbose
+ * @type boolean
  *
  * @command openLink
  * @text リンク表示
@@ -671,6 +761,11 @@
  * @text *コメント(先頭)
  * @desc コマンド成功時、この変数を先頭にギフトに添えられたコメントを代入します。コメントがない場合、0を代入します
  *
+ * @arg command
+ * @type variable
+ * @text *コメントのコマンド(先頭)
+ * @desc コマンド成功時、この変数を先頭にコメントのコマンドを代入します。コマンドがない場合、0を代入します
+ *
  * @arg thanks
  * @type switch
  * @text *作者からのハート(先頭)
@@ -760,6 +855,30 @@ PluginManager.registerCommand("AtsumaruApi", "enableInterplayer", function({ err
             () => $gameVariables.setValue(errorMessage, 0),
             error => $gameVariables.setValue(errorMessage, error.message)
         );
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "setGposMode", function({ mode }) {
+    if (window.RPGAtsumaru) {
+        window.RPGAtsumaru.comment.changeAutoGposMode(mode);
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "setGposScene", function({ scene }) {
+    if (window.RPGAtsumaru) {
+        window.RPGAtsumaru.comment.changeScene(scene);
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "setGposContext", function({ context }) {
+    if (window.RPGAtsumaru) {
+        window.RPGAtsumaru.comment.setContext(context);
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "setGposVerbose", function({ verbose }) {
+    if (window.RPGAtsumaru) {
+        window.RPGAtsumaru.comment.verbose = verbose === "true";
     }
 });
 
@@ -1193,7 +1312,7 @@ PluginManager.registerCommand("AtsumaruApi", "getGiftMyPoint", function({ myPoin
     }
 });
 
-PluginManager.registerCommand("AtsumaruApi", "getGiftHistories", function({ count, name, point, comment, thanks, reply, mapId, context, createdAt, errorMessage }) {
+PluginManager.registerCommand("AtsumaruApi", "getGiftHistories", function({ count, name, point, comment, command, thanks, reply, mapId, context, createdAt, errorMessage }) {
     if (window.RPGAtsumaru) {
         this.waitUntilPromiseSettled(window.RPGAtsumaru.gift.getHistories(),
             histories => {
@@ -1214,6 +1333,12 @@ PluginManager.registerCommand("AtsumaruApi", "getGiftHistories", function({ coun
                 if (comment) {
                     for (let i = 0; i < histories.length; i++) {
                         $gameVariables.setValue(comment + i, histories[i].comment);
+                    }
+                }
+                command = +command;
+                if (command) {
+                    for (let i = 0; i < histories.length; i++) {
+                        $gameVariables.setValue(command + i, histories[i].command);
                     }
                 }
                 thanks = +thanks;
@@ -1277,3 +1402,39 @@ PluginManager.registerCommand("AtsumaruApi", "getGiftRanking", function({ count,
         );
     }
 });
+
+{
+    const { commonOnComment, commentCommonOnComment, commandCommonOnComment, createdAtCommonOnComment, isPostCommonOnComment, isGiftCommonOnComment, nameCommonOnComment, pointCommonOnComment, thanksCommonOnComment, replyCommonOnComment } = PluginManager.parameters("AtsumaruApi");
+    if (+commonOnComment && window.RPGAtsumaru) {
+        const comments = [];
+        const _Game_Map_parallelCommonEvents = Game_Map.prototype.parallelCommonEvents;
+        Game_Map.prototype.parallelCommonEvents = function() {
+            return _Game_Map_parallelCommonEvents.apply(this, arguments).concat(
+                $dataCommonEvents.find(commonEvent => commonEvent && +commonOnComment === commonEvent.id)
+            );
+        };
+        const _Game_CommonEvent_isActive = Game_CommonEvent.prototype.isActive;
+        Game_CommonEvent.prototype.isActive = function() {
+            return (+commonOnComment === this._commonEventId && comments.length > 0) || _Game_CommonEvent_isActive.apply(this, arguments);
+        };
+        const _Game_CommonEvent_update = Game_CommonEvent.prototype.update;
+        Game_CommonEvent.prototype.update = function() {
+            if (+commonOnComment === this._commonEventId && comments.length > 0 && this._interpreter && !this._interpreter.isRunning()) {
+                const comment = comments.shift();
+                $gameVariables.setValue(commentCommonOnComment, comment.comment);
+                $gameVariables.setValue(commandCommonOnComment, comment.command);
+                $gameVariables.setValue(createdAtCommonOnComment, comment.createdAt);
+                $gameSwitches.setValue(isPostCommonOnComment, comment.createdAt === undefined);
+                $gameSwitches.setValue(isGiftCommonOnComment, comment.type === "gift");
+                $gameVariables.setValue(nameCommonOnComment, comment.name);
+                $gameVariables.setValue(pointCommonOnComment, comment.point);
+                $gameSwitches.setValue(thanksCommonOnComment, comment.thanks);
+                $gameVariables.setValue(replyCommonOnComment, comment.reply);
+                $gameMap.requestRefresh();
+            }
+            _Game_CommonEvent_update.apply(this, arguments);
+        };
+        window.RPGAtsumaru.comment.cameOut.subscribe(cameOut => (comments.push(...cameOut), $gameMap.requestRefresh()));
+        window.RPGAtsumaru.comment.posted.subscribe(posted => (comments.push(posted), $gameMap.requestRefresh()));
+    }
+}

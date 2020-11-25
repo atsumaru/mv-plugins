@@ -86,3 +86,53 @@ export function prepareBindPromise() {
         return origin.apply(this, arguments as any);
     });
 }
+
+interface CommonOnCommentParameters {
+    commonOnComment: number
+    commentCommonOnComment: number
+    commandCommonOnComment: number
+    createdAtCommonOnComment: number
+    isPostCommonOnComment: number
+    isGiftCommonOnComment: number
+    nameCommonOnComment: number
+    pointCommonOnComment: number
+    thanksCommonOnComment: number
+    replyCommonOnComment: number
+}
+
+// コメント・ギフトが流れたらコモンイベント起動
+export function commonOnComment(parameters: CommonOnCommentParameters) {
+    const { commonOnComment, commentCommonOnComment, commandCommonOnComment, createdAtCommonOnComment, isPostCommonOnComment, isGiftCommonOnComment, nameCommonOnComment, pointCommonOnComment, thanksCommonOnComment, replyCommonOnComment } = parameters;
+    if (commonOnComment && window.RPGAtsumaru) {
+        const comments = [] as any[];
+        const _Game_Map_parallelCommonEvents = Game_Map.prototype.parallelCommonEvents;
+        Game_Map.prototype.parallelCommonEvents = function() {
+            return _Game_Map_parallelCommonEvents.apply(this, arguments).concat(
+                $dataCommonEvents.find((commonEvent: any) => commonEvent && commonOnComment === commonEvent.id)
+            );
+        };
+        const _Game_CommonEvent_isActive = Game_CommonEvent.prototype.isActive;
+        Game_CommonEvent.prototype.isActive = function() {
+            return (commonOnComment === this._commonEventId && comments.length > 0) || _Game_CommonEvent_isActive.apply(this, arguments);
+        };
+        const _Game_CommonEvent_update = Game_CommonEvent.prototype.update;
+        Game_CommonEvent.prototype.update = function() {
+            if (commonOnComment === this._commonEventId && comments.length > 0 && this._interpreter && !this._interpreter.isRunning()) {
+                const comment = comments.shift();
+                $gameVariables.setValue(commentCommonOnComment, comment.comment);
+                $gameVariables.setValue(commandCommonOnComment, comment.command);
+                $gameVariables.setValue(createdAtCommonOnComment, comment.createdAt);
+                $gameSwitches.setValue(isPostCommonOnComment, comment.createdAt === undefined);
+                $gameSwitches.setValue(isGiftCommonOnComment, comment.type === "gift");
+                $gameVariables.setValue(nameCommonOnComment, comment.name);
+                $gameVariables.setValue(pointCommonOnComment, comment.point);
+                $gameSwitches.setValue(thanksCommonOnComment, comment.thanks);
+                $gameVariables.setValue(replyCommonOnComment, comment.reply);
+                $gameMap.requestRefresh();
+            }
+            _Game_CommonEvent_update.apply(this, arguments);
+        };
+        window.RPGAtsumaru.comment.cameOut.subscribe(cameOut => (comments.push(...cameOut), $gameMap.requestRefresh()));
+        window.RPGAtsumaru.comment.posted.subscribe(posted => (comments.push(posted), $gameMap.requestRefresh()));
+    }
+}
