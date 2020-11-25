@@ -32,6 +32,65 @@
  * @desc エラーが発生した場合に、エラーメッセージを代入する変数の番号を指定します。
  * @default 0
  *
+ * @param commonOnComment
+ * @type common_event
+ * @text コメント・ギフトが流れたらコモンイベント起動
+ * @desc 画面上にコメントやギフトが流れた時に、それを取得しつつ指定のコモンイベントを起動します。
+ *
+ * @param commentCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *コメント
+ * @desc コモンイベント起動時、この変数にコメントの内容を代入します。コメントがない場合、0を代入します
+ *
+ * @param commandCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *コマンド
+ * @desc コモンイベント起動時、この変数にコメントのコマンドを代入します。コマンドがない場合、0を代入します
+ *
+ * @param createdAtCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *投稿時刻
+ * @desc コモンイベント起動時、この変数にコメントの投稿時刻を代入します。時刻は1970年1月1日午前9時からの経過秒数で表されます
+ *
+ * @param isPostCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *今投稿した？
+ * @desc コモンイベント起動時、これが今このユーザー本人が投稿したものである場合このスイッチをONにします。
+ *
+ * @param isGiftCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *ギフト？
+ * @desc コモンイベント起動時、これがギフトである場合このスイッチをONにします。
+ *
+ * @param nameCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *ユーザー名
+ * @desc コモンイベント起動時、非匿名のギフトの場合、この変数にユーザー名を代入します。
+ *
+ * @param pointCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *ギフトポイント
+ * @desc コモンイベント起動時、ギフトの場合、この変数に消費ポイント（ギフトの価格）を代入します。
+ *
+ * @param thanksCommonOnComment
+ * @type switch
+ * @parent commonOnComment
+ * @text *作者からのハート
+ * @desc コモンイベント起動時、ギフトの場合、作者からのハートが贈られていればこのスイッチをONにします。
+ *
+ * @param replyCommonOnComment
+ * @type variable
+ * @parent commonOnComment
+ * @text *作者からの返信
+ * @desc コモンイベント起動時、ギフトの場合、この変数に作者からの返信を代入します。返信が(まだ)ない場合、0を代入します
+ *
  * @help
  * このプラグインは、アツマールAPIの「ギフト」を利用するためのプラグインです。
  * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/gift)を参照してください。
@@ -83,7 +142,7 @@
  */
 
 import { toTypedParameters, ensureValidVariableIds } from "./utils/parameter";
-import { addPluginCommand, prepareBindPromise } from "./utils/rmmvbridge";
+import { addPluginCommand, commonOnComment, prepareBindPromise } from "./utils/rmmvbridge";
 import { GiftHistories, GiftRanking } from "@atsumaru/api-types";
 
 interface Parameters {
@@ -92,6 +151,16 @@ interface Parameters {
     offsetHistories: number
     offsetRanking: number
     errorMessage: number
+    commonOnComment: number
+    commentCommonOnComment: number
+    commandCommonOnComment: number
+    createdAtCommonOnComment: number
+    isPostCommonOnComment: number
+    isGiftCommonOnComment: number
+    nameCommonOnComment: number
+    pointCommonOnComment: number
+    thanksCommonOnComment: number
+    replyCommonOnComment: number
 }
 
 declare const window: Window;
@@ -102,7 +171,10 @@ const getGiftMyPoints = window.RPGAtsumaru && window.RPGAtsumaru.gift.getMyPoint
 const getGiftHistories = window.RPGAtsumaru && window.RPGAtsumaru.gift.getHistories;
 const getGiftRanking = window.RPGAtsumaru && window.RPGAtsumaru.gift.getRanking;
 
-ensureValidVariableIds(parameters);
+{
+    const { totalPoint, myPoint, offsetHistories, offsetRanking, errorMessage } = parameters;
+    ensureValidVariableIds({ totalPoint, myPoint, offsetHistories, offsetRanking, errorMessage });
+}
 prepareBindPromise();
 
 addPluginCommand({
@@ -183,3 +255,5 @@ function GetGiftRanking(this: Game_Interpreter) {
         );
     }
 }
+
+commonOnComment(parameters);
