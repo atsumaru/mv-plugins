@@ -1,29 +1,29 @@
 //=============================================================================
 // AtsumaruApi.js
 //
-// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2021 ゲームアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
 
 /*:
  * @target MZ
- * @plugindesc RPGアツマールAPIを利用可能にするプラグインです
- * @author RPGアツマール開発チーム
+ * @plugindesc アツマールAPIを利用可能にするプラグインです
+ * @author ゲームアツマール開発チーム
  * @base WaitCommandUntilPromiseSettled
  * @url https://atsumaru.github.io/api-references/
  *
  * @help
- * RPGアツマール上に投稿したゲームで利用できる「RPGアツマールAPI」を
+ * ゲームアツマール上に投稿したゲームで利用できる「アツマールAPI」を
  * プラグインコマンド形式で利用可能にするプラグインです。
  *
  * プラグインコマンドの効果と使い方は各コマンド内で簡単に説明されていますが、
- * より詳細な仕様を知りたい場合はRPGアツマールAPIリファレンス（最上部URL）の
+ * より詳細な仕様を知りたい場合はゲームアツマールAPIリファレンス（最上部URL）の
  * 各機能の解説ページをお読みください。
  *
- * ※RPGアツマール上でない場合、各コマンドはスキップされます。
+ * ※ゲームアツマール上でない場合、各コマンドはスキップされます。
  *
- * ※RPGアツマールのサーバーに負荷をかけないため、
+ * ※ゲームアツマールのサーバーに負荷をかけないため、
  *   コマンドとコマンドの間隔はなるべく５秒以上空けてください。
  *
  * ※「*」で始まる引数は、実行結果がその変数に代入されることを意味しています。
@@ -36,6 +36,22 @@
  *   などの理由により失敗する可能性があります。
  *   コマンド実行後は、実行結果を扱う前にまずコマンドに成功している
  *   （＝エラーメッセージが0である）ことを確認してから結果を利用してください。
+ *
+ * @param commentGposVerbose
+ * @type boolean
+ * @text コメントgpos表示
+ * @desc コメントgposの現在値をコンソールに表示します（verboseモード）。
+ * @default false
+ *
+ * @param commentGposMode
+ * @type select
+ * @option v1
+ * @option v2
+ * @option v3
+ * @option none
+ * @text コメントgposモード設定
+ * @desc コメントのgposモードを設定します。noneで手動モード（自動変化なし）になります。
+ * @default v3
  *
  * @param commonOnComment
  * @type common_event
@@ -96,14 +112,63 @@
  * @text *作者からの返信
  * @desc コモンイベント起動時、ギフトの場合、この変数に作者からの返信を代入します。返信が(まだ)ない場合、0を代入します
  *
+ * @param thanksSettings
+ * @text おれいポップアップ設定
+ *
+ * @param autoThanks
+ * @type boolean
+ * @parent thanksSettings
+ * @text 自動表示
+ * @desc おれいポップアップを一定時間経過後に自動で表示するかどうか設定します。
+ * @default true
+ *
+ * @param thanksText
+ * @type multiline_string
+ * @parent thanksSettings
+ * @text おれい文章
+ * @desc おれいポップアップに表示される作者からのメッセージを指定します。
+ *
+ * @param thanksImage
+ * @type file
+ * @dir img/pictures
+ * @parent thanksSettings
+ * @text おれい画像
+ * @desc おれいポップアップに表示されるピクチャーを指定します。
+ *
+ * @param clapThanksText
+ * @type multiline_string
+ * @parent thanksSettings
+ * @text 拍手おれい文章
+ * @desc 拍手されたときにおれいポップアップに表示される作者からのメッセージを指定します。
+ *
+ * @param clapThanksImage
+ * @type file
+ * @dir img/pictures
+ * @parent thanksSettings
+ * @text 拍手おれい画像
+ * @desc 拍手されたときにおれいポップアップに表示されるピクチャーを指定します。
+ *
+ * @param giftThanksText
+ * @type multiline_string
+ * @parent thanksSettings
+ * @text ギフトおれい文章
+ * @desc ギフトされたときにおれいポップアップに表示される作者からのメッセージを指定します。
+ *
+ * @param giftThanksImage
+ * @type file
+ * @dir img/pictures
+ * @parent thanksSettings
+ * @text ギフトおれい画像
+ * @desc ギフトされたときにおれいポップアップに表示されるピクチャーを指定します。
+ *
  * @command isAtsumaru
  * @text アツマールかどうか判定
- * @desc RPGアツマール上でプレイしているかどうかを判定します。
+ * @desc ゲームアツマール上でプレイしているかどうかを判定します。
  *
  * @arg isAtsumaru
  * @type switch
  * @text *判定結果
- * @desc RPGアツマール上でプレイしている場合、このスイッチがONになります。
+ * @desc ゲームアツマール上でプレイしている場合、このスイッチがONになります。
  *
  * @command enableInterplayer
  * @text プレイヤー間通信の有効化
@@ -122,6 +187,7 @@
  * @type select
  * @option v1
  * @option v2
+ * @option v3
  * @option none
  *
  * @command setGposScene
@@ -819,6 +885,10 @@
  * @type variable
  * @text *エラーメッセージ
  * @desc コマンド失敗時、この変数にエラーメッセージを代入します。（成功時は0を代入します）
+ *
+ * @command openThanks
+ * @text おれいポップアップ表示
+ * @desc 作者がプレイヤーに感謝を伝え、プレイヤーは拍手やギフトで御礼と返事ができる画面を表示します。
  */
 
 /*~struct~globalServerVariable:
@@ -891,6 +961,12 @@ PluginManager.registerCommand("AtsumaruApi", "openLink", function({ url, comment
 PluginManager.registerCommand("AtsumaruApi", "openCreatorInfo", function({ id }) {
     if (window.RPGAtsumaru) {
         this.waitUntilPromiseSettled(window.RPGAtsumaru.popups.displayCreatorInformationModal($gameVariables.value(id) || undefined));
+    }
+});
+
+PluginManager.registerCommand("AtsumaruApi", "openThanks", function() {
+    if (window.RPGAtsumaru) {
+        this.waitUntilPromiseSettled(window.RPGAtsumaru.popups.displayThanksModal());
     }
 });
 
@@ -1404,37 +1480,58 @@ PluginManager.registerCommand("AtsumaruApi", "getGiftRanking", function({ count,
 });
 
 {
-    const { commonOnComment, commentCommonOnComment, commandCommonOnComment, createdAtCommonOnComment, isPostCommonOnComment, isGiftCommonOnComment, nameCommonOnComment, pointCommonOnComment, thanksCommonOnComment, replyCommonOnComment } = PluginManager.parameters("AtsumaruApi");
-    if (+commonOnComment && window.RPGAtsumaru) {
-        const comments = [];
-        const _Game_Map_parallelCommonEvents = Game_Map.prototype.parallelCommonEvents;
-        Game_Map.prototype.parallelCommonEvents = function() {
-            return _Game_Map_parallelCommonEvents.apply(this, arguments).concat(
-                $dataCommonEvents.find(commonEvent => commonEvent && +commonOnComment === commonEvent.id)
-            );
-        };
-        const _Game_CommonEvent_isActive = Game_CommonEvent.prototype.isActive;
-        Game_CommonEvent.prototype.isActive = function() {
-            return (+commonOnComment === this._commonEventId && comments.length > 0) || _Game_CommonEvent_isActive.apply(this, arguments);
-        };
-        const _Game_CommonEvent_update = Game_CommonEvent.prototype.update;
-        Game_CommonEvent.prototype.update = function() {
-            if (+commonOnComment === this._commonEventId && comments.length > 0 && this._interpreter && !this._interpreter.isRunning()) {
-                const comment = comments.shift();
-                $gameVariables.setValue(commentCommonOnComment, comment.comment);
-                $gameVariables.setValue(commandCommonOnComment, comment.command);
-                $gameVariables.setValue(createdAtCommonOnComment, comment.createdAt);
-                $gameSwitches.setValue(isPostCommonOnComment, comment.createdAt === undefined);
-                $gameSwitches.setValue(isGiftCommonOnComment, comment.type === "gift");
-                $gameVariables.setValue(nameCommonOnComment, comment.name);
-                $gameVariables.setValue(pointCommonOnComment, comment.point);
-                $gameSwitches.setValue(thanksCommonOnComment, comment.thanks);
-                $gameVariables.setValue(replyCommonOnComment, comment.reply);
-                $gameMap.requestRefresh();
+    const { commentGposVerbose, commentGposMode, commonOnComment, commentCommonOnComment, commandCommonOnComment, createdAtCommonOnComment, isPostCommonOnComment, isGiftCommonOnComment, nameCommonOnComment, pointCommonOnComment, thanksCommonOnComment, replyCommonOnComment, autoThanks, thanksText, thanksImage, clapThanksText, clapThanksImage, giftThanksText, giftThanksImage } = PluginManager.parameters("AtsumaruApi");
+    if (window.RPGAtsumaru) {
+
+        window.RPGAtsumaru.comment.verbose = commentGposVerbose === "true";
+        window.RPGAtsumaru.comment.changeAutoGposMode(commentGposMode);
+
+        const thanksSettings = { autoThanks, thanksText, thanksImage, clapThanksText, clapThanksImage, giftThanksText, giftThanksImage };
+        for (const key in thanksSettings) {
+            const value = thanksSettings[key];
+            if (value) {
+                if (key.indexOf("Image") >= 0) {
+                    thanksSettings[key] = `img/pictures/${value}.png`;
+                } else if (key === "autoThanks") {
+                    thanksSettings[key] = value === "true";
+                }
+            } else {
+                delete thanksSettings[key];
             }
-            _Game_CommonEvent_update.apply(this, arguments);
-        };
-        window.RPGAtsumaru.comment.cameOut.subscribe(cameOut => (comments.push(...cameOut), $gameMap.requestRefresh()));
-        window.RPGAtsumaru.comment.posted.subscribe(posted => (comments.push(posted), $gameMap.requestRefresh()));
+        }
+        window.RPGAtsumaru.popups.setThanksSettings(thanksSettings);
+
+        if (+commonOnComment) {
+            const comments = [];
+            const _Game_Map_parallelCommonEvents = Game_Map.prototype.parallelCommonEvents;
+            Game_Map.prototype.parallelCommonEvents = function() {
+                return _Game_Map_parallelCommonEvents.apply(this, arguments).concat(
+                    $dataCommonEvents.find(commonEvent => commonEvent && +commonOnComment === commonEvent.id)
+                );
+            };
+            const _Game_CommonEvent_isActive = Game_CommonEvent.prototype.isActive;
+            Game_CommonEvent.prototype.isActive = function() {
+                return (+commonOnComment === this._commonEventId && comments.length > 0) || _Game_CommonEvent_isActive.apply(this, arguments);
+            };
+            const _Game_CommonEvent_update = Game_CommonEvent.prototype.update;
+            Game_CommonEvent.prototype.update = function() {
+                if (+commonOnComment === this._commonEventId && comments.length > 0 && this._interpreter && !this._interpreter.isRunning()) {
+                    const comment = comments.shift();
+                    $gameVariables.setValue(commentCommonOnComment, comment.comment);
+                    $gameVariables.setValue(commandCommonOnComment, comment.command);
+                    $gameVariables.setValue(createdAtCommonOnComment, comment.createdAt);
+                    $gameSwitches.setValue(isPostCommonOnComment, comment.createdAt === undefined);
+                    $gameSwitches.setValue(isGiftCommonOnComment, comment.type === "gift");
+                    $gameVariables.setValue(nameCommonOnComment, comment.name);
+                    $gameVariables.setValue(pointCommonOnComment, comment.point);
+                    $gameSwitches.setValue(thanksCommonOnComment, comment.thanks);
+                    $gameVariables.setValue(replyCommonOnComment, comment.reply);
+                    $gameMap.requestRefresh();
+                }
+                _Game_CommonEvent_update.apply(this, arguments);
+            };
+            window.RPGAtsumaru.comment.cameOut.subscribe(cameOut => (comments.push(...cameOut), $gameMap.requestRefresh()));
+            window.RPGAtsumaru.comment.posted.subscribe(posted => (comments.push(posted), $gameMap.requestRefresh()));
+        }
     }
 }

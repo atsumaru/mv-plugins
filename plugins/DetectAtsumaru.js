@@ -1,7 +1,7 @@
 //=============================================================================
 // DetectAtsumaru.js
 //
-// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2021 ゲームアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
@@ -22,6 +22,27 @@
         return isNatural(variableId) && variableId < $dataSystem.variables.length;
     }
 
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    function __spreadArray(to, from) {
+        for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+            to[j] = from[i];
+        return to;
+    }
+
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
         baseClass.prototype[target] = f(baseClass.prototype[target]);
@@ -31,7 +52,7 @@
         hook(Game_Interpreter, "pluginCommand", function (origin) { return function (command, args) {
             origin.apply(this, arguments);
             if (commands[command]) {
-                commands[command].apply(this, [command].concat(args));
+                commands[command].apply(this, __spreadArray([command], args));
             }
         }; });
     }

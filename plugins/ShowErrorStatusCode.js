@@ -1,7 +1,7 @@
 //=============================================================================
 // ShowErrorStatusCode.js
 //
-// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2021 ゲームアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
