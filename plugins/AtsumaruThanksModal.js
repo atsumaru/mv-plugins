@@ -1,5 +1,5 @@
 //=============================================================================
-// AtsumaruCreatorInformationModal.js
+// AtsumaruThanksModal.js
 //
 // Copyright (c) 2018-2021 ゲームアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
@@ -8,16 +8,6 @@
 
 (function () {
     'use strict';
-
-    function isNumber(value) {
-        return value !== "" && !isNaN(value);
-    }
-    function isInteger(value) {
-        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
-    }
-    function isNatural(value) {
-        return isInteger(value) && value > 0;
-    }
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -118,46 +108,105 @@
         }; });
     }
 
-    function toNaturalOrUndefined(value, command, name) {
-        if (value === undefined) {
-            return value;
+    function toTypedParameters(parameters, isArray) {
+        if (isArray === void 0) { isArray = false; }
+        var result = isArray ? [] : {};
+        for (var key in parameters) {
+            try {
+                var value = JSON.parse(parameters[key]);
+                result[key] = value instanceof Array ? toTypedParameters(value, true)
+                    : value instanceof Object ? toTypedParameters(value)
+                        : value;
+            }
+            catch (error) {
+                result[key] = parameters[key];
+            }
         }
-        var number = +value;
-        if (isNumber(value) && isNatural(number)) {
-            return number;
-        }
-        else {
-            throw new Error("「" + command + "」コマンドでは、" + name + "を指定する場合は自然数を指定してください。" + name + ": " + value);
-        }
+        return result;
     }
 
     /*:
-     * @plugindesc RPGアツマールの作者情報ダイアログAPI操作のためのプラグインです
-     * @author RPGアツマール開発チーム
+     * @plugindesc ゲームアツマールのおれいポップアップAPI操作のためのプラグインです
+     * @author ゲームアツマール開発チーム
+     *
+     * @param autoThanks
+     * @type boolean
+     * @text 自動表示
+     * @desc おれいポップアップを一定時間経過後に自動で表示するかどうか設定します。
+     * @default true
+     *
+     * @param thanksText
+     * @type note
+     * @text おれい文章
+     * @desc おれいポップアップに表示される作者からのメッセージを指定します。
+     *
+     * @param thanksImage
+     * @type file
+     * @dir img/pictures
+     * @require 1
+     * @text おれい画像
+     * @desc おれいポップアップに表示されるピクチャーを指定します。
+     *
+     * @param clapThanksText
+     * @type note
+     * @text 拍手おれい文章
+     * @desc 拍手されたときにおれいポップアップに表示される作者からのメッセージを指定します。
+     *
+     * @param clapThanksImage
+     * @type file
+     * @dir img/pictures
+     * @require 1
+     * @text 拍手おれい画像
+     * @desc 拍手されたときにおれいポップアップに表示されるピクチャーを指定します。
+     *
+     * @param giftThanksText
+     * @type note
+     * @text ギフトおれい文章
+     * @desc ギフトされたときにおれいポップアップに表示される作者からのメッセージを指定します。
+     *
+     * @param giftThanksImage
+     * @type file
+     * @dir img/pictures
+     * @require 1
+     * @text ギフトおれい画像
+     * @desc ギフトされたときにおれいポップアップに表示されるピクチャーを指定します。
      *
      * @help
-     * このプラグインは、アツマールAPIの「作者情報ダイアログ」を利用するためのプラグインです。
-     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/creator-modal)を参照してください。
+     * このプラグインは、アツマールAPIの「おれいポップアップ」を利用するためのプラグインです。
+     * 「おれいポップアップ」は作者がプレイヤーに感謝の気持ちを伝えられる機能であり、
+     * プレイヤーはその気持ちを受け取って、『拍手』や『ギフト』で御礼と返事をすることが可能な機能です。
+     * プラグインパラメータにより、おれいポップアップに表示する文章や画像を変更できます。
+     * 詳しくはアツマールAPIリファレンス(https://atsumaru.github.io/api-references/thanks-modal)を参照してください。
      *
      * プラグインコマンド:
-     *   DisplayCreatorInformationModal <niconicoUserId>        # 指定した<niconicoUserId>の作者情報ダイアログを表示します。省略した場合は現在のゲームの作者の作者情報ダイアログを表示します。
-     *   作者情報ダイアログ表示 <niconicoUserId>        # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
+     *   DisplayThanksModal        # おれいポップアップを表示します
+     *   おれいポップアップ表示        # コマンド名が日本語のバージョンです。動作は上記コマンドと同じ
      */
-    var displayCreatorInformationModal = window.RPGAtsumaru && window.RPGAtsumaru.popups.displayCreatorInformationModal;
-    prepareBindPromise();
-    addPluginCommand({
-        DisplayCreatorInformationModal: DisplayCreatorInformationModal,
-        "作者情報ダイアログ表示": DisplayCreatorInformationModal
-    });
-    function DisplayCreatorInformationModal(command, niconicoUserIdStr) {
-        var niconicoUserId = toNaturalOrUndefined(niconicoUserIdStr, command, "niconicoUserId");
-        if (displayCreatorInformationModal) {
-            if (niconicoUserId === undefined) {
-                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal());
+    var parameters = toTypedParameters(PluginManager.parameters("AtsumaruThanksModal"));
+    var displayThanksModal = window.RPGAtsumaru && window.RPGAtsumaru.popups.displayThanksModal;
+    var setThanksSettings = window.RPGAtsumaru && window.RPGAtsumaru.popups.setThanksSettings;
+    if (setThanksSettings) {
+        for (var key in parameters) {
+            var value = parameters[key];
+            if (value) {
+                if (key.indexOf("Image") >= 0) {
+                    parameters[key] = "img/pictures/" + value + ".png";
+                }
             }
             else {
-                this.bindPromiseForRPGAtsumaruPlugin(displayCreatorInformationModal(niconicoUserId));
+                delete parameters[key];
             }
+        }
+        setThanksSettings(parameters);
+    }
+    prepareBindPromise();
+    addPluginCommand({
+        DisplayThanksModal: DisplayThanksModal,
+        "おれいポップアップ表示": DisplayThanksModal
+    });
+    function DisplayThanksModal() {
+        if (displayThanksModal) {
+            this.bindPromiseForRPGAtsumaruPlugin(displayThanksModal());
         }
     }
 

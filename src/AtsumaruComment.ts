@@ -8,6 +8,16 @@
  * @desc コメントgposの現在値をコンソールに表示します（verboseモード）。
  * @default false
  *
+ * @param gposMode
+ * @type select
+ * @option v1
+ * @option v2
+ * @option v3
+ * @option none
+ * @default v3
+ * @text コメントgposモード設定
+ * @desc コメントのgposモードを設定します。noneで手動モード（自動変化なし）になります。
+ *
  * @param commonOnComment
  * @type common_event
  * @text コメント・ギフトが流れたらコモンイベント起動
@@ -80,6 +90,10 @@
  *   gposモード設定 v2
  *      # コメントのgposモードをgpos v2に設定します。
  *
+ *   SetGposMode v3
+ *   gposモード設定 v3
+ *      # コメントのgposモードをgpos v3に設定します。
+ *
  *   SetGposMode none
  *   gposモード設定 none
  *      # コメントのgposモードを手動（自動変化なし）に設定します。
@@ -106,6 +120,7 @@ import { addPluginCommand, commonOnComment } from "./utils/rmmvbridge";
 
 interface Parameters {
     verbose: boolean
+    gposMode: string
     commonOnComment: number
     commentCommonOnComment: number
     commandCommonOnComment: number
@@ -132,6 +147,7 @@ addPluginCommand({
 
 if (window.RPGAtsumaru) {
     window.RPGAtsumaru.comment.verbose = parameters.verbose;
+    window.RPGAtsumaru.comment.changeAutoGposMode(parameters.gposMode);
 }
 
 function SetGposMode(this: Game_Interpreter, _: string, mode: string) {

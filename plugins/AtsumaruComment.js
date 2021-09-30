@@ -1,13 +1,34 @@
 //=============================================================================
 // AtsumaruComment.js
 //
-// Copyright (c) 2018-2020 RPGアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
+// Copyright (c) 2018-2021 ゲームアツマール開発チーム(https://game.nicovideo.jp/atsumaru)
 // Released under the MIT license
 // http://opensource.org/licenses/mit-license.php
 //=============================================================================
 
 (function () {
     'use strict';
+
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    function __spreadArray(to, from) {
+        for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+            to[j] = from[i];
+        return to;
+    }
 
     // 既存のクラスとメソッド名を取り、そのメソッドに処理を追加する
     function hook(baseClass, target, f) {
@@ -18,7 +39,7 @@
         hook(Game_Interpreter, "pluginCommand", function (origin) { return function (command, args) {
             origin.apply(this, arguments);
             if (commands[command]) {
-                commands[command].apply(this, [command].concat(args));
+                commands[command].apply(this, __spreadArray([command], args));
             }
         }; });
     }
@@ -83,6 +104,16 @@
      * @text コメントgpos表示
      * @desc コメントgposの現在値をコンソールに表示します（verboseモード）。
      * @default false
+     *
+     * @param gposMode
+     * @type select
+     * @option v1
+     * @option v2
+     * @option v3
+     * @option none
+     * @default v3
+     * @text コメントgposモード設定
+     * @desc コメントのgposモードを設定します。noneで手動モード（自動変化なし）になります。
      *
      * @param commonOnComment
      * @type common_event
@@ -156,6 +187,10 @@
      *   gposモード設定 v2
      *      # コメントのgposモードをgpos v2に設定します。
      *
+     *   SetGposMode v3
+     *   gposモード設定 v3
+     *      # コメントのgposモードをgpos v3に設定します。
+     *
      *   SetGposMode none
      *   gposモード設定 none
      *      # コメントのgposモードを手動（自動変化なし）に設定します。
@@ -187,6 +222,7 @@
     });
     if (window.RPGAtsumaru) {
         window.RPGAtsumaru.comment.verbose = parameters.verbose;
+        window.RPGAtsumaru.comment.changeAutoGposMode(parameters.gposMode);
     }
     function SetGposMode(_, mode) {
         if (window.RPGAtsumaru) {
